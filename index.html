@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Model Viewer PRO - GitHub Version</title>
+    <title>3D Model Viewer PRO</title>
     <style>
         * {
             margin: 0;
@@ -229,7 +229,7 @@
             text-align: center;
         }
         
-        /* Model Selection Styles */
+        /* Model Selection */
         .model-info {
             background: rgba(67, 97, 238, 0.2);
             padding: 15px;
@@ -259,24 +259,13 @@
             min-width: 120px;
             font-size: 14px;
         }
-        .tool-row input, .tool-row select, .tool-row textarea {
+        .tool-row input, .tool-row select {
             flex: 1;
             padding: 8px;
             border-radius: 5px;
             border: 1px solid #555;
             background: rgba(30, 30, 40, 0.8);
             color: white;
-        }
-        .tool-buttons {
-            display: flex;
-            gap: 5px;
-            margin-top: 10px;
-        }
-        .tool-buttons button {
-            flex: 1;
-            padding: 8px;
-            font-size: 12px;
-            margin: 0;
         }
         .generated-link {
             margin-top: 10px;
@@ -291,7 +280,7 @@
             margin-top: 5px;
         }
         
-        /* Client Mode Styles */
+        /* Client Mode */
         .client-mode .control-group[data-client-hidden] {
             display: none;
         }
@@ -303,7 +292,7 @@
             margin-bottom: 15px;
         }
         
-        /* НОВЫЙ СТИЛЬ ДЛЯ СКРИНШОТОВ */
+        /* Screenshot Modal */
         .screenshot-modal {
             position: fixed;
             top: 0;
@@ -395,7 +384,6 @@
             overflow-y: auto;
         }
 
-        /* Группы инструментов */
         .tool-group {
             background: rgba(50, 50, 60, 0.7);
             border-radius: 8px;
@@ -461,7 +449,6 @@
             font-size: 12px;
         }
 
-        /* Кнопки действий */
         .screenshot-actions {
             display: flex;
             gap: 10px;
@@ -506,7 +493,6 @@
             font-size: 0.9rem;
         }
 
-        /* Адаптивность */
         @media (max-width: 1024px) {
             .screenshot-content {
                 flex-direction: column;
@@ -558,15 +544,16 @@
 </head>
 <body>
     <div class="container">
+        <!-- Основной заголовок -->
         <header id="main-header">
             <h1>3D Model Viewer PRO</h1>
-            <p class="subtitle">Загружает модель default.stl из репозитория GitHub</p>
+            <p class="subtitle">Professional 3D Model Viewer</p>
         </header>
 
         <!-- Клиентский заголовок (скрыт по умолчанию) -->
         <header id="client-header" style="display: none;">
             <h1>3D Model Viewer</h1>
-            <p class="subtitle" id="client-subtitle">Просмотр 3D модели</p>
+            <p class="subtitle">Client View</p>
             <div class="client-header">
                 <p id="client-model-info">Загрузка модели...</p>
                 <p id="link-expiry" style="font-size: 14px; margin-top: 5px;"></p>
@@ -583,47 +570,26 @@
             </div>
 
             <div id="controls">
-                <!-- Блок для загрузки файлов (скрывается в клиентском режиме) -->
-                <div class="control-group" data-client-hidden>
-                    <h3>Model Info</h3>
-                    <div class="model-info">
-                        <div class="model-icon">🔷</div>
-                        <h4>Default Model</h4>
-                        <p>Загружается из репозитория GitHub</p>
-                        <button id="reload-model" class="screenshot-btn">Reload Model</button>
+                <!-- Выбор модели из папки models -->
+                <div class="control-group">
+                    <h3>Select Model</h3>
+                    <div class="tool-row">
+                        <label for="model-select">Choose Model:</label>
+                        <select id="model-select">
+                            <option value="default.stl">Default Model</option>
+                            <!-- Модели будут добавляться автоматически -->
+                        </select>
                     </div>
-                    <p class="format-info">Файл: default.stl из папки models</p>
+                    <button id="load-selected-model" class="screenshot-btn">Load Selected Model</button>
                 </div>
 
-                <div class="control-group" data-client-hidden>
-                    <h3>File Upload</h3>
-                    <div class="file-input-container">
-                        <label for="file-input" class="file-input-label">
-                            Upload Your Own Model
-                        </label>
-                        <input type="file" id="file-input" accept=".stl,.glb,.obj">
-                        <p class="format-info">Supports: STL, GLB, OBJ formats</p>
-                    </div>
-                </div>
-
-                <!-- Генератор клиентских ссылок (только в основном режиме) -->
+                <!-- Генератор клиентских ссылок -->
                 <div class="control-group" data-client-hidden>
                     <h3>Client Link Generator</h3>
                     <div class="link-generator">
                         <div class="tool-row">
-                            <label for="model-select">Model:</label>
-                            <select id="model-select">
-                                <option value="default.stl">Default Model</option>
-                                <!-- Модели будут добавляться динамически -->
-                            </select>
-                        </div>
-                        <div class="tool-row">
-                            <label for="client-theme">Theme:</label>
-                            <select id="client-theme">
-                                <option value="simple">Simple View</option>
-                                <option value="annotations">With Annotations</option>
-                                <option value="minimal">Minimal</option>
-                            </select>
+                            <label>Current Model:</label>
+                            <span id="current-model-name">default.stl</span>
                         </div>
                         <div class="tool-row">
                             <label for="expiry-hours">Expires in (hours):</label>
@@ -644,6 +610,19 @@
                     </div>
                 </div>
 
+                <!-- Загрузка своих моделей -->
+                <div class="control-group" data-client-hidden>
+                    <h3>Upload Your Model</h3>
+                    <div class="file-input-container">
+                        <label for="file-input" class="file-input-label">
+                            Upload Your Own Model
+                        </label>
+                        <input type="file" id="file-input" accept=".stl,.glb,.obj">
+                        <p class="format-info">Supports: STL, GLB, OBJ formats</p>
+                    </div>
+                </div>
+
+                <!-- Остальные элементы управления -->
                 <div class="control-group">
                     <h3>Material Type</h3>
                     <div class="material-control">
@@ -792,7 +771,7 @@
         </div>
 
         <footer>
-            <p>3D Model Viewer PRO | Model: default.stl from GitHub repository</p>
+            <p>3D Model Viewer PRO</p>
         </footer>
     </div>
 
@@ -803,21 +782,12 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/OBJLoader.js"></script>
 
     <script>
-        // =============================================
         // КОНФИГУРАЦИЯ
-        // =============================================
-        
         const GITHUB_USERNAME = 'skudatin-lang';
         const GITHUB_REPOSITORY = '3d-model-viewer-with-model';
         const GITHUB_BRANCH = 'main';
         
-        // Доступные модели
-        const AVAILABLE_MODELS = {
-            'default.stl': 'Default Model'
-            // Добавьте сюда свои модели: 'filename.stl': 'Display Name'
-        };
-
-        // Основные переменные Three.js
+        // Основные переменные
         let scene, camera, renderer, controls;
         let currentModel = null;
         let gridVisible = true;
@@ -854,9 +824,10 @@
 
         // Хранилище для сгенерированных ссылок
         let generatedLinks = JSON.parse(localStorage.getItem('generatedLinks') || '{}');
+        let availableModels = ['default.stl']; // Начинаем с default модели
 
         // =============================================
-        // ОСНОВНЫЕ ФУНКЦИИ THREE.JS
+        // ОСНОВНЫЕ ФУНКЦИИ
         // =============================================
 
         function initThreeJS() {
@@ -875,6 +846,7 @@
 
             updateRendererSize();
 
+            // Освещение
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
             scene.add(ambientLight);
 
@@ -886,12 +858,14 @@
             directionalLight2.position.set(-10, -10, -10);
             scene.add(directionalLight2);
 
+            // Сетка и оси
             gridHelper = new THREE.GridHelper(20, 20, 0x888888, 0x444444);
             scene.add(gridHelper);
 
             axesHelper = new THREE.AxesHelper(10);
             scene.add(axesHelper);
 
+            // Управление
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
@@ -922,9 +896,10 @@
         }
 
         // =============================================
-        // ФУНКЦИИ ДЛЯ РАБОТЫ С МОДЕЛЯМИ
+        // РАБОТА С МОДЕЛЯМИ
         // =============================================
 
+        // Создание материала
         function createMaterial(type, color, wireframe) {
             const colorValue = color || '#ff6b6b';
             
@@ -973,70 +948,9 @@
             }
         }
 
-        function applyMaterialToModel() {
-            if (!currentModel) return;
-            
-            currentModel.traverse((child) => {
-                if (child.isMesh) {
-                    const newMaterial = createMaterial(currentMaterialType, child.material.color, wireframeVisible);
-                    child.material = newMaterial;
-                }
-            });
-            
-            storeOriginalMaterials(currentModel);
-        }
-
-        function storeOriginalMaterials(model) {
-            currentMaterials = [];
-            model.traverse((child) => {
-                if (child.isMesh && child.material) {
-                    currentMaterials.push({
-                        mesh: child,
-                        originalMaterial: child.material
-                    });
-                }
-            });
-        }
-
-        function updateModelColor() {
-            const colorValue = document.getElementById('model-color')?.value || '#ff6b6b';
-            
-            currentMaterials.forEach(item => {
-                if (item.mesh && item.mesh.material) {
-                    item.mesh.material.color.set(colorValue);
-                }
-            });
-        }
-
-        function loadSTLFromURL(url) {
-            return new Promise((resolve, reject) => {
-                const loader = new THREE.STLLoader();
-                
-                fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.arrayBuffer();
-                    })
-                    .then(data => {
-                        try {
-                            const geometry = loader.parse(data);
-                            const material = createMaterial(currentMaterialType, null, wireframeVisible);
-                            const mesh = new THREE.Mesh(geometry, material);
-                            resolve(mesh);
-                        } catch (error) {
-                            reject(new Error("Failed to load STL file from URL: " + error.message));
-                        }
-                    })
-                    .catch(error => {
-                        reject(new Error("Failed to fetch STL file: " + error.message));
-                    });
-            });
-        }
-
+        // Загрузка модели из GitHub
         function loadModelFromGitHub(modelName) {
-            updateStatus(`Loading model: ${AVAILABLE_MODELS[modelName]}...`, false);
+            updateStatus(`Loading model: ${modelName}...`, false);
             showLoading(true);
             
             if (currentModel) {
@@ -1073,12 +987,15 @@
                     controls.update();
                     
                     showLoading(false);
-                    updateStatus(`Model loaded successfully: ${AVAILABLE_MODELS[modelName]}`, false);
+                    updateStatus(`Model loaded successfully: ${modelName}`, false);
                     
-                    // Обновляем информацию о модели в клиентском режиме
+                    // Обновляем информацию о текущей модели
+                    document.getElementById('current-model-name').textContent = modelName;
+                    
+                    // В клиентском режиме обновляем заголовок
                     if (isClientMode()) {
                         document.getElementById('client-model-info').textContent = 
-                            `Model: ${AVAILABLE_MODELS[modelName]}`;
+                            `Model: ${modelName}`;
                     }
                 })
                 .catch(error => {
@@ -1088,8 +1005,47 @@
                 });
         }
 
+        function loadSTLFromURL(url) {
+            return new Promise((resolve, reject) => {
+                const loader = new THREE.STLLoader();
+                
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.arrayBuffer();
+                    })
+                    .then(data => {
+                        try {
+                            const geometry = loader.parse(data);
+                            const material = createMaterial(currentMaterialType, null, wireframeVisible);
+                            const mesh = new THREE.Mesh(geometry, material);
+                            resolve(mesh);
+                        } catch (error) {
+                            reject(new Error("Failed to load STL file from URL: " + error.message));
+                        }
+                    })
+                    .catch(error => {
+                        reject(new Error("Failed to fetch STL file: " + error.message));
+                    });
+            });
+        }
+
+        function storeOriginalMaterials(model) {
+            currentMaterials = [];
+            model.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    currentMaterials.push({
+                        mesh: child,
+                        originalMaterial: child.material
+                    });
+                }
+            });
+        }
+
         // =============================================
-        // КЛИЕНТСКИЙ РЕЖИМ И ГЕНЕРАЦИЯ ССЫЛОК
+        // КЛИЕНТСКИЙ РЕЖИМ
         // =============================================
 
         function isClientMode() {
@@ -1106,7 +1062,6 @@
                 
                 const urlParams = new URLSearchParams(window.location.search);
                 const modelName = urlParams.get('model') || 'default.stl';
-                const theme = urlParams.get('theme') || 'simple';
                 const token = urlParams.get('token');
                 
                 // Проверяем срок действия ссылки
@@ -1132,61 +1087,22 @@
                     }
                 }
                 
-                // Применяем тему
-                applyClientTheme(theme);
-                
-                // Загружаем модель
+                // Загружаем модель для клиента
                 loadModelFromGitHub(modelName);
-                
-                updateStatus(`Client mode: ${AVAILABLE_MODELS[modelName]} - ${theme} theme`);
+                updateStatus(`Client mode: ${modelName}`);
             } else {
                 // Основной режим - загружаем модель по умолчанию
                 loadModelFromGitHub('default.stl');
             }
         }
 
-        function applyClientTheme(theme) {
-            // Скрываем элементы управления в зависимости от темы
-            const elementsToHide = [];
-            
-            switch(theme) {
-                case 'simple':
-                    elementsToHide.push(
-                        '.control-group h3:contains("File Upload")',
-                        '.control-group h3:contains("Material Type")',
-                        '.control-group h3:contains("Client Link Generator")',
-                        '#toggle-wireframe',
-                        '#toggle-rotation',
-                        '#rotation-direction'
-                    );
-                    break;
-                    
-                case 'minimal':
-                    // Минимальный режим - скрываем все кроме просмотра
-                    document.getElementById('controls').style.display = 'none';
-                    return;
-                    
-                case 'annotations':
-                    // Полный функционал аннотаций - ничего не скрываем
-                    break;
-            }
-            
-            // Скрываем элементы
-            elementsToHide.forEach(selector => {
-                const element = document.querySelector(selector);
-                if (element) {
-                    element.closest('.control-group').style.display = 'none';
-                }
-            });
-        }
+        // =============================================
+        // ГЕНЕРАЦИЯ КЛИЕНТСКИХ ССЫЛОК
+        // =============================================
 
         function generateClientLink() {
-            const modelSelect = document.getElementById('model-select');
-            const themeSelect = document.getElementById('client-theme');
+            const currentModelName = document.getElementById('current-model-name').textContent;
             const expiryHours = parseInt(document.getElementById('expiry-hours').value);
-            
-            const selectedModel = modelSelect.value;
-            const selectedTheme = themeSelect.value;
             
             // Генерируем уникальный токен
             const token = generateToken();
@@ -1194,8 +1110,7 @@
             
             // Сохраняем информацию о ссылке
             generatedLinks[token] = {
-                model: selectedModel,
-                theme: selectedTheme,
+                model: currentModelName,
                 expires: expires,
                 created: Date.now()
             };
@@ -1204,7 +1119,7 @@
             
             // Создаем URL
             const baseUrl = window.location.origin + window.location.pathname;
-            const clientUrl = `${baseUrl}?client=true&model=${selectedModel}&theme=${selectedTheme}&token=${token}`;
+            const clientUrl = `${baseUrl}?client=true&model=${currentModelName}&token=${token}`;
             
             // Показываем сгенерированную ссылку
             const linkOutput = document.getElementById('client-link-output');
@@ -1215,7 +1130,7 @@
             expiryDisplay.textContent = expiryHours;
             linkContainer.style.display = 'block';
             
-            updateStatus(`Client link generated for: ${AVAILABLE_MODELS[selectedModel]} (expires in ${expiryHours}h)`);
+            updateStatus(`Client link generated for: ${currentModelName} (expires in ${expiryHours}h)`);
         }
 
         function generateToken() {
@@ -1233,16 +1148,29 @@
             updateStatus('Link copied to clipboard!');
         }
 
+        // =============================================
+        // ОБНОВЛЕНИЕ СПИСКА МОДЕЛЕЙ
+        // =============================================
+
         function updateModelsList() {
             const modelSelect = document.getElementById('model-select');
+            
+            // Очищаем список
             modelSelect.innerHTML = '';
             
-            Object.keys(AVAILABLE_MODELS).forEach(modelName => {
+            // Добавляем доступные модели
+            availableModels.forEach(modelName => {
                 const option = document.createElement('option');
                 option.value = modelName;
-                option.textContent = AVAILABLE_MODELS[modelName];
+                option.textContent = modelName;
                 modelSelect.appendChild(option);
             });
+        }
+
+        function loadSelectedModel() {
+            const modelSelect = document.getElementById('model-select');
+            const selectedModel = modelSelect.value;
+            loadModelFromGitHub(selectedModel);
         }
 
         // =============================================
@@ -1659,6 +1587,184 @@
             updateStatus(`Material changed to: ${type}`, false);
         }
 
+        function applyMaterialToModel() {
+            if (!currentModel) return;
+            
+            currentModel.traverse((child) => {
+                if (child.isMesh) {
+                    const newMaterial = createMaterial(currentMaterialType, child.material.color, wireframeVisible);
+                    child.material = newMaterial;
+                }
+            });
+            
+            storeOriginalMaterials(currentModel);
+        }
+
+        function updateModelColor() {
+            const colorValue = document.getElementById('model-color')?.value || '#ff6b6b';
+            
+            currentMaterials.forEach(item => {
+                if (item.mesh && item.mesh.material) {
+                    item.mesh.material.color.set(colorValue);
+                }
+            });
+        }
+
+        // =============================================
+        // ЗАГРУЗКА ФАЙЛОВ
+        // =============================================
+
+        function loadSTLModel(file) {
+            return new Promise((resolve, reject) => {
+                const loader = new THREE.STLLoader();
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const geometry = loader.parse(event.target.result);
+                        const material = createMaterial(currentMaterialType, null, wireframeVisible);
+                        const mesh = new THREE.Mesh(geometry, material);
+                        resolve(mesh);
+                    } catch (error) {
+                        reject(new Error("Failed to load STL file: " + error.message));
+                    }
+                };
+                
+                reader.onerror = function() {
+                    reject(new Error("Failed to read STL file"));
+                };
+                
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        
+        function loadGLTFModel(file) {
+            return new Promise((resolve, reject) => {
+                const loader = new THREE.GLTFLoader();
+                const url = URL.createObjectURL(file);
+                
+                loader.load(
+                    url,
+                    function(gltf) {
+                        URL.revokeObjectURL(url);
+                        const model = gltf.scene;
+                        
+                        model.traverse((child) => {
+                            if (child.isMesh) {
+                                const newMaterial = createMaterial(currentMaterialType, child.material?.color, wireframeVisible);
+                                child.material = newMaterial;
+                            }
+                        });
+                        
+                        resolve(model);
+                    },
+                    function(xhr) {
+                        const percent = Math.round((xhr.loaded / xhr.total) * 100);
+                        const progressElement = document.getElementById('progress');
+                        if (progressElement) {
+                            progressElement.textContent = percent + '%';
+                        }
+                    },
+                    function(error) {
+                        URL.revokeObjectURL(url);
+                        reject(new Error("Failed to load GLB/GLTF file"));
+                    }
+                );
+            });
+        }
+        
+        function loadOBJModel(file) {
+            return new Promise((resolve, reject) => {
+                const loader = new THREE.OBJLoader();
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const model = loader.parse(event.target.result);
+                        
+                        model.traverse((child) => {
+                            if (child.isMesh) {
+                                const material = createMaterial(currentMaterialType, null, wireframeVisible);
+                                child.material = material;
+                            }
+                        });
+                        
+                        resolve(model);
+                    } catch (error) {
+                        reject(new Error("Failed to load OBJ file"));
+                    }
+                };
+                
+                reader.onerror = function() {
+                    reject(new Error("Failed to read OBJ file"));
+                };
+                
+                reader.readAsText(file);
+            });
+        }
+        
+        function loadModel(file) {
+            updateStatus("Loading 3D model...", false);
+            showLoading(true);
+            
+            if (currentModel) {
+                scene.remove(currentModel);
+            }
+            
+            const fileExtension = file.name.toLowerCase().split('.').pop();
+            let loadPromise;
+            
+            if (fileExtension === 'stl') {
+                loadPromise = loadSTLModel(file);
+            } else if (fileExtension === 'glb' || fileExtension === 'gltf') {
+                loadPromise = loadGLTFModel(file);
+            } else if (fileExtension === 'obj') {
+                loadPromise = loadOBJModel(file);
+            } else {
+                updateStatus("Unsupported file format", true);
+                showLoading(false);
+                return;
+            }
+            
+            loadPromise
+                .then(model => {
+                    const container = new THREE.Group();
+                    container.add(model);
+                    
+                    const box = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    
+                    model.position.x = -center.x;
+                    model.position.y = -center.y;
+                    model.position.z = -center.z;
+                    
+                    currentModel = container;
+                    scene.add(currentModel);
+                    
+                    storeOriginalMaterials(currentModel);
+                    
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const fov = camera.fov * (Math.PI / 180);
+                    let cameraZ = Math.abs(maxDim / (2 * Math.tan(fov / 2)));
+                    
+                    camera.position.set(0, 0, cameraZ * 1.5);
+                    controls.target.set(0, 0, 0);
+                    controls.update();
+                    
+                    showLoading(false);
+                    updateStatus(`3D model loaded successfully: ${file.name}`, false);
+                    
+                    // Обновляем текущую модель
+                    document.getElementById('current-model-name').textContent = file.name;
+                })
+                .catch(error => {
+                    console.error("Model load error:", error);
+                    showLoading(false);
+                    updateStatus(`Error: ${error.message}`, true);
+                });
+        }
+
         // =============================================
         // ОБРАБОТЧИКИ СОБЫТИЙ
         // =============================================
@@ -1667,6 +1773,24 @@
             // Генерация клиентских ссылок
             document.getElementById('generate-client-link')?.addEventListener('click', generateClientLink);
             document.getElementById('copy-link')?.addEventListener('click', copyClientLink);
+
+            // Выбор модели из списка
+            document.getElementById('load-selected-model')?.addEventListener('click', loadSelectedModel);
+
+            // Загрузка файлов
+            document.getElementById('file-input')?.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const fileExtension = file.name.toLowerCase().split('.').pop();
+                    const supportedFormats = ['stl', 'glb', 'obj'];
+                    
+                    if (supportedFormats.includes(fileExtension)) {
+                        loadModel(file);
+                    } else {
+                        updateStatus("Please select a STL, GLB, or OBJ file", true);
+                    }
+                }
+            });
 
             // Материалы
             document.querySelectorAll('.material-btn').forEach(button => {
@@ -1817,10 +1941,6 @@
             window.addEventListener('resize', function() {
                 updateRendererSize();
             });
-
-            document.getElementById('reload-model')?.addEventListener('click', function() {
-                loadModelFromGitHub('default.stl');
-            });
         }
 
         // =============================================
@@ -1842,7 +1962,7 @@
             initThreeJS();
             updateModelsList();
             setupEventListeners();
-            handleClientMode(); // Обрабатываем клиентский режим
+            handleClientMode();
             animate();
         }
 
