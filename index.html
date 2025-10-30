@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Model Viewer PRO - GitHub Version</title>
+    <style>
+        /* Все ваши стили остаются без изменений */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .viewer-container {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        #canvas-container {
+            flex: 1;
+            min-width: 300px;
+            height: 500px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            position: relative;
+            background: #1a1a1a;
+        }
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #controls {
+            background: rgba(30, 30, 40, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .control-group {
+            margin-bottom: 20px;
+        }
+        .control-group h3 {
+            margin-bottom: 10px;
+            color: #ff9d00;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+        button {
+            background: #4361ee;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: calc(100% - 10px);
+            font-weight: 500;
+        }
+        button:hover {
+            background: #3a56d4;
+            transform: translateY(-2px);
+        }
+        .direction-btn {
+            background: #7209b7;
+        }
+        .direction-btn:hover {
+            background: #5a08a0;
+        }
+        .material-btn {
+            background: #f72585;
+        }
+        .material-btn:hover {
+            background: #d9047c;
+        }
+        .screenshot-btn {
+            background: #4cc9f0;
+            color: #000;
+        }
+        .screenshot-btn:hover {
+            background: #3aa8d0;
+        }
+        .file-input-container {
+            margin: 10px 5px;
+        }
+        .file-input-label {
+            display: block;
+            background: #7209b7;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .file-input-label:hover {
+            background: #5a08a0;
+            transform: translateY(-2px);
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .status {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 30px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+        }
+        .color-control {
+            display: flex;
+            align-items: center;
+            margin: 10px 5px;
+            gap: 10px;
+        }
+        .color-control label {
+            flex: 1;
+        }
+        .color-control input {
+            width: 60px;
+            height: 40px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .rotation-control {
+            display: flex;
+            align-items: center;
+            margin: 10px 5px;
+            gap: 10px;
+        }
+        .rotation-control label {
+            flex: 1;
+        }
+        .rotation-control input {
+            flex: 2;
+        }
+        .material-control {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            margin: 10px 5px;
+        }
+        .material-control button {
+            margin: 2px;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        .material-props {
+            margin: 10px 5px;
+            display: none;
+        }
+        .material-prop {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            gap: 10px;
+        }
+        .material-prop label {
+            flex: 1;
+            font-size: 14px;
+        }
+        .material-prop input {
+            flex: 2;
+        }
+        .direction-control {
+            display: flex;
+            gap: 5px;
+        }
+        .direction-control button {
+            flex: 1;
+        }
+        .format-info {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        /* Model Selection Styles */
+        .model-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 10px 5px;
+        }
+        .model-btn {
+            background: #4361ee;
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .model-btn:hover {
+            background: #3a56d4;
+            transform: translateY(-2px);
+        }
+        .model-btn.active {
+            background: #7209b7;
+            border: 2px solid #4cc9f0;
+        }
+        .model-icon {
+            font-size: 18px;
+        }
+        
+        .screenshot-preview {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .screenshot-preview-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: rgba(30, 30, 40, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .screenshot-preview h3 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .screenshot-image-container {
+            display: flex;
+            justify-content: center;
+            max-height: 70vh;
+            overflow: auto;
+            border-radius: 5px;
+            background: #1a1a1a;
+            padding: 10px;
+        }
+        .screenshot-image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 5px;
+            border: 2px solid #fff;
+        }
+        .screenshot-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .screenshot-buttons button {
+            width: auto;
+            padding: 10px 20px;
+            min-width: 180px;
+        }
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        .annotation-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            background: rgba(40, 40, 50, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .annotation-control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .annotation-control-row label {
+            min-width: 120px;
+        }
+        .annotation-control-row input {
+            flex: 1;
+        }
+        .annotation-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        .annotation-buttons button {
+            flex: 1;
+            padding: 8px;
+            font-size: 12px;
+        }
+        .annotation-canvas-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+        #annotation-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+        
+        .annotation-list {
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 10px;
+            background: rgba(30, 30, 40, 0.7);
+            border-radius: 5px;
+            padding: 5px;
+        }
+        .annotation-item {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            margin: 3px 0;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .annotation-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .annotation-item.selected {
+            background: rgba(76, 201, 240, 0.3);
+            border: 1px solid #4cc9f0;
+        }
+        .annotation-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: #f72585;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .annotation-size {
+            margin-left: auto;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .comment-controls {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(50, 50, 60, 0.7);
+            border-radius: 5px;
+            display: none;
+        }
+        .comment-control-row {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        .comment-control-row label {
+            font-size: 14px;
+        }
+        .comment-control-row select, 
+        .comment-control-row input {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background: rgba(30, 30, 40, 0.8);
+            color: white;
+        }
+        .comment-control-row textarea {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background: rgba(30, 30, 40, 0.8);
+            color: white;
+            resize: vertical;
+            min-height: 60px;
+        }
+        .comment-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #4cc9f0;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+        
+        .close-preview-top {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            transition: all 0.3s;
+        }
+        .close-preview-top:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        @media (max-width: 768px) {
+            .viewer-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            #controls {
+                width: 100%;
+                max-width: 300px;
+            }
+            .screenshot-preview-content {
+                padding: 15px;
+            }
+            .annotation-control-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .annotation-control-row label {
+                min-width: auto;
+            }
+            .screenshot-buttons {
+                flex-direction: column;
+            }
+            .screenshot-buttons button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>3D Model Viewer PRO - GitHub Version</h1>
+            <p class="subtitle">Professional 3D model viewer with pre-loaded models</p>
+        </header>
+
+        <div class="viewer-container">
+            <div id="canvas-container">
+                <canvas id="canvas"></canvas>
+                <div class="loading" id="loading">
+                    <h3>Loading Model...</h3>
+                    <div id="progress">0%</div>
+                </div>
+            </div>
+
+            <div id="controls">
+                <div class="control-group">
+                    <h3>Select Model</h3>
+                    <div class="model-selection">
+                        <button class="model-btn" data-model="robot" id="btn-robot">
+                            <span class="model-icon">🤖</span>
+                            Robot Arm (STL)
+                        </button>
+                        <button class="model-btn" data-model="teapot" id="btn-teapot">
+                            <span class="model-icon">🍵</span>
+                            Utah Teapot (GLB)
+                        </button>
+                        <button class="model-btn" data-model="cube" id="btn-cube">
+                            <span class="model-icon">⬜</span>
+                            Textured Cube (OBJ)
+                        </button>
+                    </div>
+                    <p class="format-info">All models are loaded from GitHub repository</p>
+                </div>
+
+                <div class="control-group">
+                    <h3>File Upload</h3>
+                    <div class="file-input-container">
+                        <label for="file-input" class="file-input-label">
+                            Upload Your Own Model
+                        </label>
+                        <input type="file" id="file-input" accept=".stl,.glb,.obj">
+                        <p class="format-info">Supports: STL, GLB, OBJ formats</p>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Material Type</h3>
+                    <div class="material-control">
+                        <button class="material-btn" data-material="basic">Basic</button>
+                        <button class="material-btn" data-material="standard">Standard</button>
+                        <button class="material-btn" data-material="phong">Phong</button>
+                        <button class="material-btn" data-material="lambert">Lambert</button>
+                        <button class="material-btn" data-material="toon">Toon</button>
+                        <button class="material-btn" data-material="normal">Normal</button>
+                    </div>
+                    <div class="material-props" id="material-props">
+                        <div class="material-prop">
+                            <label for="metalness">Metalness:</label>
+                            <input type="range" id="metalness" min="0" max="1" step="0.1" value="0">
+                        </div>
+                        <div class="material-prop">
+                            <label for="roughness">Roughness:</label>
+                            <input type="range" id="roughness" min="0" max="1" step="0.1" value="0.5">
+                        </div>
+                        <div class="material-prop">
+                            <label for="shininess">Shininess:</label>
+                            <input type="range" id="shininess" min="0" max="100" step="1" value="30">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Model Controls</h3>
+                    <div class="color-control">
+                        <label for="model-color">Model Color:</label>
+                        <input type="color" id="model-color" value="#ff6b6b">
+                    </div>
+                    <button id="toggle-wireframe">Wireframe: Off</button>
+                    <div class="rotation-control">
+                        <label for="rotation-speed">Auto Rotation Speed:</label>
+                        <input type="range" id="rotation-speed" min="0" max="2" step="0.1" value="0.5">
+                    </div>
+                    <button id="toggle-rotation">Auto Rotation: Off</button>
+                    <div class="direction-control">
+                        <button id="rotation-direction" class="direction-btn">Rotation: CW</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>View Controls</h3>
+                    <button id="reset-view">Reset View</button>
+                    <button id="toggle-grid">Grid: On</button>
+                    <button id="toggle-axes">Axes: On</button>
+                </div>
+
+                <div class="control-group">
+                    <h3>Environment</h3>
+                    <button id="bg-dark">Dark BG</button>
+                    <button id="bg-light">Light BG</button>
+                    <button id="bg-gradient">Gradient BG</button>
+                </div>
+
+                <div class="control-group">
+                    <h3>Screenshot</h3>
+                    <button id="take-screenshot" class="screenshot-btn">Take Screenshot</button>
+                </div>
+
+                <div class="status" id="status">Loading default model...</div>
+            </div>
+        </div>
+
+        <div class="screenshot-preview" id="screenshot-preview">
+            <button class="close-preview-top" id="close-preview-top">×</button>
+            <div class="screenshot-preview-content">
+                <h3>Screenshot Preview with Annotations</h3>
+                
+                <div class="annotation-controls">
+                    <div class="annotation-control-row">
+                        <label for="default-annotation-radius">Default Marker Radius:</label>
+                        <input type="range" id="default-annotation-radius" min="10" max="50" value="20">
+                        <span id="default-radius-value">20px</span>
+                    </div>
+                    
+                    <div id="selected-annotation-controls" style="display: none;">
+                        <div class="annotation-control-row">
+                            <label for="selected-annotation-radius">Selected Marker Radius:</label>
+                            <input type="range" id="selected-annotation-radius" min="10" max="50" value="20">
+                            <span id="selected-radius-value">20px</span>
+                        </div>
+                        
+                        <div class="comment-controls" id="comment-controls">
+                            <div class="comment-control-row">
+                                <label for="comment-type">Comment Type:</label>
+                                <select id="comment-type">
+                                    <option value="">No comment</option>
+                                    <option value="make_more_convex">Сделать более выпуклым</option>
+                                    <option value="make_more_concave">Сделать более вдавленным</option>
+                                    <option value="make_narrower_width">Сделать уже по ширине</option>
+                                    <option value="make_wider_width">Сделать шире по ширине</option>
+                                    <option value="make_narrower_height">Сделать уже по высоте</option>
+                                    <option value="make_wider_height">Сделать шире по высоте</option>
+                                    <option value="custom">Свой вариант</option>
+                                </select>
+                            </div>
+                            
+                            <div class="comment-control-row" id="custom-comment-container" style="display: none;">
+                                <label for="custom-comment">Custom Comment:</label>
+                                <textarea id="custom-comment" placeholder="Введите ваш комментарий..."></textarea>
+                            </div>
+                            
+                            <div class="comment-control-row">
+                                <button id="save-comment" class="screenshot-btn">Save Comment</button>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; font-size: 12px; margin-top: 5px;">
+                            Editing Marker <span id="selected-annotation-number">1</span>
+                        </div>
+                    </div>
+                    
+                    <div class="annotation-buttons">
+                        <button id="clear-annotations" class="screenshot-btn">Clear All Markers</button>
+                        <button id="delete-selected-annotation" class="screenshot-btn">Delete Selected</button>
+                    </div>
+                    
+                    <div class="annotation-list" id="annotation-list">
+                        <!-- Annotation items will be added here dynamically -->
+                    </div>
+                    
+                    <p style="font-size: 12px; text-align: center; margin-top: 10px;">
+                        Click on the image to add markers. Drag to move markers.<br>
+                        Click on a marker in the list to select and edit it.
+                    </p>
+                </div>
+                
+                <div class="screenshot-image-container">
+                    <div class="annotation-canvas-container">
+                        <img id="screenshot-image" src="" alt="Screenshot">
+                        <canvas id="annotation-canvas"></canvas>
+                    </div>
+                </div>
+                
+                <div class="screenshot-buttons">
+                    <button id="download-annotated-screenshot" class="screenshot-btn">Download with Markers & Comments</button>
+                    <button id="close-preview">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>3D Model Viewer PRO - GitHub Version | All models loaded from repository</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/OBJLoader.js"></script>
+
+    <script>
+        // =============================================
+        // КОНФИГУРАЦИЯ МОДЕЛЕЙ - ЗДЕСЬ ВЫ МЕНЯЕТЕ ССЫЛКИ!
+        // =============================================
+        
+        // ЗАМЕНИТЕ 'YOUR_USERNAME' и 'YOUR_REPOSITORY' на ваши реальные данные
+        const GITHUB_USERNAME = 'YOUR_USERNAME';
+        const GITHUB_REPOSITORY = 'YOUR_REPOSITORY';
+        const GITHUB_BRANCH = 'main'; // или 'master'
+        
+        // Базовый URL для raw файлов в вашем репозитории
+        const GITHUB_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/${GITHUB_BRANCH}`;
+        
+        // Ссылки на модели в вашем репозитории
+        const MODEL_URLS = {
+            'robot': `${GITHUB_BASE_URL}/models/robot.stl`,
+            'teapot': `${GITHUB_BASE_URL}/models/teapot.glb`, 
+            'cube': `${GITHUB_BASE_URL}/models/cube.obj`
+        };
+        
+        // Текущая выбранная модель
+        let currentSelectedModel = 'robot';
+
+        // Остальной код остается практически без изменений
+        let currentModel = null;
+        let gridVisible = true;
+        let axesVisible = true;
+        let wireframeVisible = false;
+        let autoRotation = false;
+        let rotationSpeed = 0.5;
+        let rotationDirection = 1;
+        let currentMaterials = [];
+        let currentMaterialType = 'phong';
+        let gridHelper, axesHelper;
+        let currentScreenshotUrl = null;
+        
+        // Annotation variables
+        let annotations = [];
+        let annotationCounter = 1;
+        let defaultAnnotationRadius = 20;
+        let selectedAnnotation = null;
+        let isDraggingAnnotation = false;
+        let draggedAnnotation = null;
+        let annotationCanvas, annotationCtx;
+        let screenshotImg;
+        
+        // Comment options mapping
+        const commentOptions = {
+            "make_more_convex": "Сделать более выпуклым",
+            "make_more_concave": "Сделать более вдавленным",
+            "make_narrower_width": "Сделать уже по ширине",
+            "make_wider_width": "Сделать шире по ширине",
+            "make_narrower_height": "Сделать уже по высоте",
+            "make_wider_height": "Сделать шире по высоте",
+            "custom": "Свой вариант"
+        };
+        
+        // Initialize scene, camera, and renderer
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x2c3e50);
+        
+        // Camera setup
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(5, 5, 10);
+        
+        const renderer = new THREE.WebGLRenderer({ 
+            canvas: document.getElementById('canvas'), 
+            antialias: true,
+            preserveDrawingBuffer: true
+        });
+        
+        // Set renderer size
+        const container = document.getElementById('canvas-container');
+        renderer.setSize(container.offsetWidth, container.offsetHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        
+        // Add lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+        
+        const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.6);
+        directionalLight1.position.set(10, 10, 10);
+        scene.add(directionalLight1);
+        
+        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+        directionalLight2.position.set(-10, -10, -10);
+        scene.add(directionalLight2);
+        
+        const directionalLight3 = new THREE.DirectionalLight(0xffffff, 0.3);
+        directionalLight3.position.set(0, 10, -10);
+        scene.add(directionalLight3);
+        
+        // Add grid helper
+        gridHelper = new THREE.GridHelper(20, 20, 0x888888, 0x444444);
+        scene.add(gridHelper);
+        
+        // Add axes helper
+        axesHelper = new THREE.AxesHelper(10);
+        scene.add(axesHelper);
+        
+        // Set up orbit controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            const container = document.getElementById('canvas-container');
+            camera.aspect = container.offsetWidth / container.offsetHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.offsetWidth, container.offsetHeight);
+        });
+        
+        // Update status message
+        function updateStatus(message, isError) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            if (isError) {
+                statusElement.style.color = '#ff4444';
+            } else {
+                statusElement.style.color = '#ffffff';
+            }
+        }
+        
+        // Show/hide loading indicator
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        // Create material based on type and properties
+        function createMaterial(type, color, wireframe) {
+            const colorValue = color || document.getElementById('model-color').value;
+            
+            switch(type) {
+                case 'basic':
+                    return new THREE.MeshBasicMaterial({ 
+                        color: colorValue,
+                        wireframe: wireframe
+                    });
+                case 'standard':
+                    const metalness = parseFloat(document.getElementById('metalness').value);
+                    const roughness = parseFloat(document.getElementById('roughness').value);
+                    return new THREE.MeshStandardMaterial({ 
+                        color: colorValue,
+                        metalness: metalness,
+                        roughness: roughness,
+                        wireframe: wireframe
+                    });
+                case 'phong':
+                    const shininess = parseFloat(document.getElementById('shininess').value);
+                    return new THREE.MeshPhongMaterial({ 
+                        color: colorValue,
+                        specular: 0x111111,
+                        shininess: shininess,
+                        wireframe: wireframe
+                    });
+                case 'lambert':
+                    return new THREE.MeshLambertMaterial({ 
+                        color: colorValue,
+                        wireframe: wireframe
+                    });
+                case 'toon':
+                    return new THREE.MeshToonMaterial({ 
+                        color: colorValue,
+                        wireframe: wireframe
+                    });
+                case 'normal':
+                    return new THREE.MeshNormalMaterial({ 
+                        wireframe: wireframe
+                    });
+                default:
+                    return new THREE.MeshPhongMaterial({ 
+                        color: colorValue,
+                        wireframe: wireframe
+                    });
+            }
+        }
+        
+        // Apply material to model
+        function applyMaterialToModel() {
+            if (!currentModel) return;
+            
+            currentModel.traverse((child) => {
+                if (child.isMesh) {
+                    const newMaterial = createMaterial(currentMaterialType, child.material.color, wireframeVisible);
+                    child.material = newMaterial;
+                }
+            });
+            
+            // Store materials for color control
+            storeOriginalMaterials(currentModel);
+        }
+        
+        // Store original materials for color and wireframe control
+        function storeOriginalMaterials(model) {
+            currentMaterials = [];
+            model.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    currentMaterials.push({
+                        mesh: child,
+                        originalMaterial: child.material
+                    });
+                }
+            });
+        }
+        
+        // Update model color
+        function updateModelColor() {
+            const colorValue = document.getElementById('model-color').value;
+            
+            currentMaterials.forEach(item => {
+                if (item.mesh && item.mesh.material) {
+                    item.mesh.material.color.set(colorValue);
+                }
+            });
+        }
+        
+        // Toggle wireframe mode
+        function toggleWireframe() {
+            wireframeVisible = !wireframeVisible;
+            
+            currentMaterials.forEach(item => {
+                if (item.mesh && item.mesh.material) {
+                    item.mesh.material.wireframe = wireframeVisible;
+                }
+            });
+            
+            document.getElementById('toggle-wireframe').textContent = 
+                "Wireframe: " + (wireframeVisible ? "On" : "Off");
+        }
+        
+        // Toggle auto rotation
+        function toggleRotation() {
+            autoRotation = !autoRotation;
+            document.getElementById('toggle-rotation').textContent = 
+                "Auto Rotation: " + (autoRotation ? "On" : "Off");
+        }
+        
+        // Toggle rotation direction
+        function toggleRotationDirection() {
+            rotationDirection = -rotationDirection;
+            document.getElementById('rotation-direction').textContent = 
+                "Rotation: " + (rotationDirection > 0 ? "CW" : "CCW");
+        }
+        
+        // Update rotation speed
+        function updateRotationSpeed() {
+            rotationSpeed = parseFloat(document.getElementById('rotation-speed').value);
+        }
+        
+        // Update material properties
+        function updateMaterialProperties() {
+            if (!currentModel) return;
+            
+            currentModel.traverse((child) => {
+                if (child.isMesh) {
+                    if (child.material instanceof THREE.MeshStandardMaterial) {
+                        child.material.metalness = parseFloat(document.getElementById('metalness').value);
+                        child.material.roughness = parseFloat(document.getElementById('roughness').value);
+                    } else if (child.material instanceof THREE.MeshPhongMaterial) {
+                        child.material.shininess = parseFloat(document.getElementById('shininess').value);
+                    }
+                }
+            });
+        }
+        
+        // Change material type
+        function changeMaterialType(type) {
+            currentMaterialType = type;
+            applyMaterialToModel();
+            
+            // Show/hide material properties based on material type
+            const materialProps = document.getElementById('material-props');
+            if (type === 'standard') {
+                materialProps.style.display = 'block';
+            } else if (type === 'phong') {
+                materialProps.style.display = 'block';
+            } else {
+                materialProps.style.display = 'none';
+            }
+            
+            updateStatus(`Material changed to: ${type}`, false);
+        }
+        
+        // Load model from URL
+        function loadModelFromURL(url, modelName) {
+            return new Promise((resolve, reject) => {
+                updateStatus(`Loading model: ${modelName}`, false);
+                showLoading(true);
+                
+                // Remove previous model
+                if (currentModel) {
+                    scene.remove(currentModel);
+                }
+                
+                const fileExtension = url.toLowerCase().split('.').pop();
+                let loadPromise;
+                
+                // Determine which loader to use based on file extension
+                if (fileExtension === 'stl') {
+                    loadPromise = loadSTLFromURL(url);
+                } else if (fileExtension === 'glb' || fileExtension === 'gltf') {
+                    loadPromise = loadGLBFromURL(url);
+                } else if (fileExtension === 'obj') {
+                    loadPromise = loadOBJFromURL(url);
+                } else {
+                    updateStatus("Unsupported file format", true);
+                    showLoading(false);
+                    reject(new Error("Unsupported file format"));
+                    return;
+                }
+                
+                loadPromise
+                    .then(model => {
+                        // Create a container group for the model
+                        const container = new THREE.Group();
+                        container.add(model);
+                        
+                        // Calculate the bounding box of the model
+                        const box = new THREE.Box3().setFromObject(model);
+                        const center = box.getCenter(new THREE.Vector3());
+                        const size = box.getSize(new THREE.Vector3());
+                        
+                        // Center the model within the container
+                        model.position.x = -center.x;
+                        model.position.y = -center.y;
+                        model.position.z = -center.z;
+                        
+                        // Add the container to the scene
+                        currentModel = container;
+                        scene.add(currentModel);
+                        
+                        // Store materials for color control
+                        storeOriginalMaterials(currentModel);
+                        
+                        // Adjust camera to fit model
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        const fov = camera.fov * (Math.PI / 180);
+                        let cameraZ = Math.abs(maxDim / (2 * Math.tan(fov / 2)));
+                        
+                        // Set camera position
+                        camera.position.set(0, 0, cameraZ * 1.5);
+                        controls.target.set(0, 0, 0);
+                        controls.update();
+                        
+                        showLoading(false);
+                        updateStatus(`3D model loaded successfully: ${modelName}`, false);
+                        resolve(model);
+                    })
+                    .catch(error => {
+                        console.error("Model load error:", error);
+                        showLoading(false);
+                        updateStatus(`Error loading ${modelName}: ${error.message}`, true);
+                        reject(error);
+                    });
+            });
+        }
+        
+        // Load STL from URL
+        function loadSTLFromURL(url) {
+            return new Promise((resolve, reject) => {
+                const loader = new THREE.STLLoader();
+                
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.arrayBuffer();
+                    })
+                    .then(data => {
+                        try {
+                            const geometry = loader.parse(data);
+                            
+                            // Create mesh with current material
+                            const material = createMaterial(currentMaterialType, document.getElementById('model-color').value, wireframeVisible);
+                            const mesh = new THREE.Mesh(geometry, material);
+                            
+                            resolve(mesh);
+                        } catch (error) {
+                            console.error("STL load error:", error);
+                            reject(new Error("Failed to load STL file from URL: " + error.message));
+                        }
+                    })
+                    .catch(error => {
+                        reject(new Error("Failed to fetch STL file: " + error.message));
+                    });
+            });
+        }
+        
+        // Load GLB/GLTF from URL
+        function loadGLBFromURL(url) {
+            return new Promise((resolve, reject) => {
+                const loader = new THREE.GLTFLoader();
+                
+                loader.load(
+                    url,
+                    function(gltf) {
+                        const model = gltf.scene;
+                        
+                        // Apply our material to the model
+                        model.traverse((child) => {
+                            if (child.isMesh) {
+                                const newMaterial = createMaterial(currentMaterialType, child.material?.color, wireframeVisible);
+                                child.material = newMaterial;
+                            }
+                        });
+                        
+                        resolve(model);
+                    },
+                    function(xhr) {
+                        const percent = Math.round((xhr.loaded / xhr.total) * 100);
+                        document.getElementById('progress').textContent = percent + '%';
+                    },
+                    function(error) {
+                        console.error("GLTF load error:", error);
+                        reject(new Error("Failed to load GLB/GLTF file from URL"));
+                    }
+                );
+            });
+        }
+        
+        // Load OBJ from URL
+        function loadOBJFromURL(url) {
+            return new Promise((resolve, reject) => {
+                const loader = new THREE.OBJLoader();
+                
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        try {
+                            const model = loader.parse(data);
+                            
+                            // Apply material to all meshes in the model
+                            model.traverse((child) => {
+                                if (child.isMesh) {
+                                    const material = createMaterial(currentMaterialType, document.getElementById('model-color').value, wireframeVisible);
+                                    child.material = material;
+                                }
+                            });
+                            
+                            resolve(model);
+                        } catch (error) {
+                            console.error("OBJ load error:", error);
+                            reject(new Error("Failed to load OBJ file from URL: " + error.message));
+                        }
+                    })
+                    .catch(error => {
+                        reject(new Error("Failed to fetch OBJ file: " + error.message));
+                    });
+            });
+        }
+        
+        // Load selected model
+        function loadSelectedModel(modelKey) {
+            if (MODEL_URLS[modelKey]) {
+                currentSelectedModel = modelKey;
+                loadModelFromURL(MODEL_URLS[modelKey], modelKey);
+                
+                // Update active button
+                document.querySelectorAll('.model-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.getElementById(`btn-${modelKey}`).classList.add('active');
+            }
+        }
+        
+        // Initialize model selection buttons
+        function initModelSelection() {
+            document.getElementById('btn-robot').addEventListener('click', () => loadSelectedModel('robot'));
+            document.getElementById('btn-teapot').addEventListener('click', () => loadSelectedModel('teapot'));
+            document.getElementById('btn-cube').addEventListener('click', () => loadSelectedModel('cube'));
+            
+            // Load default model
+            loadSelectedModel('robot');
+        }
+
+        // Остальные функции (аннотации, скриншоты и т.д.) остаются без изменений
+        // ... [все остальные функции из предыдущего кода]
+
+        // Annotation functions
+        function initAnnotationCanvas() {
+            annotationCanvas = document.getElementById('annotation-canvas');
+            annotationCtx = annotationCanvas.getContext('2d');
+            
+            const img = document.getElementById('screenshot-image');
+            annotationCanvas.width = img.clientWidth;
+            annotationCanvas.height = img.clientHeight;
+            
+            annotations = [];
+            annotationCounter = 1;
+            selectedAnnotation = null;
+            updateAnnotationList();
+            redrawAnnotations();
+        }
+        
+        function addAnnotation(x, y) {
+            const annotation = {
+                id: annotationCounter++,
+                x: x,
+                y: y,
+                radius: defaultAnnotationRadius,
+                comment: null
+            };
+            
+            annotations.push(annotation);
+            updateAnnotationList();
+            redrawAnnotations();
+        }
+        
+        function redrawAnnotations() {
+            annotationCtx.clearRect(0, 0, annotationCanvas.width, annotationCanvas.height);
+            
+            annotations.forEach(annotation => {
+                annotationCtx.beginPath();
+                annotationCtx.arc(annotation.x, annotation.y, annotation.radius, 0, 2 * Math.PI);
+                
+                if (annotation === selectedAnnotation) {
+                    annotationCtx.strokeStyle = '#4cc9f0';
+                    annotationCtx.lineWidth = 4;
+                } else {
+                    annotationCtx.strokeStyle = '#ff0000';
+                    annotationCtx.lineWidth = 3;
+                }
+                
+                annotationCtx.stroke();
+                
+                annotationCtx.fillStyle = annotation === selectedAnnotation ? '#4cc9f0' : '#ff0000';
+                annotationCtx.font = 'bold ' + (annotation.radius * 0.8) + 'px Arial';
+                annotationCtx.textAlign = 'center';
+                annotationCtx.textBaseline = 'middle';
+                annotationCtx.fillText(annotation.id.toString(), annotation.x, annotation.y);
+                
+                if (annotation.comment) {
+                    const commentText = annotation.comment.type === 'custom' 
+                        ? annotation.comment.text 
+                        : commentOptions[annotation.comment.type];
+                    
+                    if (commentText) {
+                        annotationCtx.fillStyle = '#4cc9f0';
+                        annotationCtx.font = '12px Arial';
+                        annotationCtx.textAlign = 'center';
+                        annotationCtx.textBaseline = 'top';
+                        
+                        const textMetrics = annotationCtx.measureText(commentText);
+                        const textWidth = textMetrics.width;
+                        const textHeight = 16;
+                        const padding = 4;
+                        
+                        annotationCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                        annotationCtx.fillRect(
+                            annotation.x - textWidth/2 - padding,
+                            annotation.y + annotation.radius + 5,
+                            textWidth + padding*2,
+                            textHeight + padding
+                        );
+                        
+                        annotationCtx.fillStyle = '#ffffff';
+                        annotationCtx.fillText(
+                            commentText,
+                            annotation.x,
+                            annotation.y + annotation.radius + 5 + padding
+                        );
+                    }
+                }
+            });
+        }
+        
+        function getAnnotationAt(x, y) {
+            for (let i = annotations.length - 1; i >= 0; i--) {
+                const annotation = annotations[i];
+                const distance = Math.sqrt(
+                    Math.pow(x - annotation.x, 2) + 
+                    Math.pow(y - annotation.y, 2)
+                );
+                
+                if (distance <= annotation.radius) {
+                    return annotation;
+                }
+            }
+            return null;
+        }
+        
+        function updateDefaultAnnotationRadius() {
+            defaultAnnotationRadius = parseInt(document.getElementById('default-annotation-radius').value);
+            document.getElementById('default-radius-value').textContent = defaultAnnotationRadius + 'px';
+        }
+        
+        function updateSelectedAnnotationRadius() {
+            if (selectedAnnotation) {
+                selectedAnnotation.radius = parseInt(document.getElementById('selected-annotation-radius').value);
+                document.getElementById('selected-radius-value').textContent = selectedAnnotation.radius + 'px';
+                redrawAnnotations();
+                updateAnnotationList();
+            }
+        }
+        
+        function selectAnnotation(annotation) {
+            selectedAnnotation = annotation;
+            
+            if (annotation) {
+                document.getElementById('selected-annotation-controls').style.display = 'block';
+                document.getElementById('selected-annotation-radius').value = annotation.radius;
+                document.getElementById('selected-radius-value').textContent = annotation.radius + 'px';
+                document.getElementById('selected-annotation-number').textContent = annotation.id;
+                
+                document.getElementById('comment-controls').style.display = 'block';
+                
+                if (annotation.comment) {
+                    document.getElementById('comment-type').value = annotation.comment.type;
+                    
+                    if (annotation.comment.type === 'custom') {
+                        document.getElementById('custom-comment-container').style.display = 'block';
+                        document.getElementById('custom-comment').value = annotation.comment.text;
+                    } else {
+                        document.getElementById('custom-comment-container').style.display = 'none';
+                    }
+                } else {
+                    document.getElementById('comment-type').value = '';
+                    document.getElementById('custom-comment-container').style.display = 'none';
+                }
+            } else {
+                document.getElementById('selected-annotation-controls').style.display = 'none';
+                document.getElementById('comment-controls').style.display = 'none';
+            }
+            
+            updateAnnotationList();
+            redrawAnnotations();
+        }
+        
+        function updateAnnotationList() {
+            const annotationList = document.getElementById('annotation-list');
+            annotationList.innerHTML = '';
+            
+            annotations.forEach(annotation => {
+                const item = document.createElement('div');
+                item.className = 'annotation-item' + (annotation === selectedAnnotation ? ' selected' : '');
+                
+                const commentIndicator = annotation.comment ? '<span class="comment-indicator"></span>' : '';
+                
+                item.innerHTML = `
+                    <span class="annotation-number">${annotation.id}</span>
+                    Marker ${annotation.id}
+                    <span class="annotation-size">${annotation.radius}px</span>
+                    ${commentIndicator}
+                `;
+                
+                item.addEventListener('click', () => {
+                    selectAnnotation(annotation);
+                });
+                
+                annotationList.appendChild(item);
+            });
+        }
+        
+        function clearAnnotations() {
+            annotations = [];
+            annotationCounter = 1;
+            selectedAnnotation = null;
+            updateAnnotationList();
+            redrawAnnotations();
+        }
+        
+        function deleteSelectedAnnotation() {
+            if (selectedAnnotation) {
+                const index = annotations.indexOf(selectedAnnotation);
+                if (index !== -1) {
+                    annotations.splice(index, 1);
+                    
+                    if (annotations.length === 0) {
+                        annotationCounter = 1;
+                    }
+                    
+                    selectedAnnotation = null;
+                    updateAnnotationList();
+                    redrawAnnotations();
+                }
+            }
+        }
+        
+        function saveComment() {
+            if (!selectedAnnotation) return;
+            
+            const commentType = document.getElementById('comment-type').value;
+            
+            if (commentType === '') {
+                selectedAnnotation.comment = null;
+            } else if (commentType === 'custom') {
+                const customComment = document.getElementById('custom-comment').value.trim();
+                if (customComment) {
+                    selectedAnnotation.comment = {
+                        type: 'custom',
+                        text: customComment
+                    };
+                } else {
+                    selectedAnnotation.comment = null;
+                }
+            } else {
+                selectedAnnotation.comment = {
+                    type: commentType,
+                    text: commentOptions[commentType]
+                };
+            }
+            
+            updateAnnotationList();
+            redrawAnnotations();
+            updateStatus("Comment saved", false);
+        }
+        
+        function takeScreenshot() {
+            if (!currentModel) {
+                updateStatus("No model loaded to take screenshot", true);
+                return;
+            }
+            
+            renderer.render(scene, camera);
+            
+            const dataURL = renderer.domElement.toDataURL('image/png');
+            currentScreenshotUrl = dataURL;
+            
+            const preview = document.getElementById('screenshot-preview');
+            const screenshotImage = document.getElementById('screenshot-image');
+            screenshotImage.src = dataURL;
+            preview.style.display = 'flex';
+            
+            screenshotImage.onload = function() {
+                initAnnotationCanvas();
+            };
+            
+            updateStatus("Screenshot captured - preview shown", false);
+        }
+        
+        function downloadAnnotatedScreenshot() {
+            if (!currentScreenshotUrl) return;
+            
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            tempCanvas.width = screenshotImg.naturalWidth;
+            tempCanvas.height = screenshotImg.naturalHeight;
+            
+            tempCtx.drawImage(screenshotImg, 0, 0, tempCanvas.width, tempCanvas.height);
+            
+            const scaleX = tempCanvas.width / annotationCanvas.width;
+            const scaleY = tempCanvas.height / annotationCanvas.height;
+            
+            annotations.forEach(annotation => {
+                const scaledX = annotation.x * scaleX;
+                const scaledY = annotation.y * scaleY;
+                const scaledRadius = annotation.radius * Math.min(scaleX, scaleY);
+                
+                tempCtx.beginPath();
+                tempCtx.arc(scaledX, scaledY, scaledRadius, 0, 2 * Math.PI);
+                tempCtx.strokeStyle = '#ff0000';
+                tempCtx.lineWidth = 3 * Math.min(scaleX, scaleY);
+                tempCtx.stroke();
+                
+                tempCtx.fillStyle = '#ff0000';
+                tempCtx.font = 'bold ' + (scaledRadius * 0.8) + 'px Arial';
+                tempCtx.textAlign = 'center';
+                tempCtx.textBaseline = 'middle';
+                tempCtx.fillText(annotation.id.toString(), scaledX, scaledY);
+                
+                if (annotation.comment) {
+                    const commentText = annotation.comment.type === 'custom' 
+                        ? annotation.comment.text 
+                        : commentOptions[annotation.comment.type];
+                    
+                    if (commentText) {
+                        const fontSize = 12 * Math.min(scaleX, scaleY);
+                        tempCtx.fillStyle = '#4cc9f0';
+                        tempCtx.font = `bold ${fontSize}px Arial`;
+                        tempCtx.textAlign = 'center';
+                        tempCtx.textBaseline = 'top';
+                        
+                        const textMetrics = tempCtx.measureText(commentText);
+                        const textWidth = textMetrics.width;
+                        const textHeight = fontSize;
+                        const padding = 4 * Math.min(scaleX, scaleY);
+                        
+                        tempCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                        tempCtx.fillRect(
+                            scaledX - textWidth/2 - padding,
+                            scaledY + scaledRadius + 5 * Math.min(scaleX, scaleY),
+                            textWidth + padding*2,
+                            textHeight + padding
+                        );
+                        
+                        tempCtx.fillStyle = '#ffffff';
+                        tempCtx.fillText(
+                            commentText,
+                            scaledX,
+                            scaledY + scaledRadius + 5 * Math.min(scaleX, scaleY) + padding/2
+                        );
+                    }
+                }
+            });
+            
+            const dataURL = tempCanvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `3d-model-screenshot-annotated-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.png`;
+            link.href = dataURL;
+            link.click();
+            
+            updateStatus("Annotated screenshot downloaded", false);
+        }
+        
+        function closePreview() {
+            document.getElementById('screenshot-preview').style.display = 'none';
+        }
+
+        // File upload functionality (unchanged)
+        function loadSTLModel(file) {
+            return new Promise((resolve, reject) => {
+                const loader = new THREE.STLLoader();
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const geometry = loader.parse(event.target.result);
+                        const material = createMaterial(currentMaterialType, document.getElementById('model-color').value, wireframeVisible);
+                        const mesh = new THREE.Mesh(geometry, material);
+                        resolve(mesh);
+                    } catch (error) {
+                        console.error("STL load error:", error);
+                        reject(new Error("Failed to load STL file: " + error.message));
+                    }
+                };
+                
+                reader.onerror = function(error) {
+                    reject(new Error("Failed to read STL file"));
+                };
+                
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        
+        function loadGLTFModel(file) {
+            return new Promise((resolve, reject) => {
+                const loader = new THREE.GLTFLoader();
+                const url = URL.createObjectURL(file);
+                
+                loader.load(
+                    url,
+                    function(gltf) {
+                        URL.revokeObjectURL(url);
+                        const model = gltf.scene;
+                        
+                        model.traverse((child) => {
+                            if (child.isMesh) {
+                                const newMaterial = createMaterial(currentMaterialType, child.material?.color, wireframeVisible);
+                                child.material = newMaterial;
+                            }
+                        });
+                        
+                        resolve(model);
+                    },
+                    function(xhr) {
+                        const percent = Math.round((xhr.loaded / xhr.total) * 100);
+                        document.getElementById('progress').textContent = percent + '%';
+                    },
+                    function(error) {
+                        URL.revokeObjectURL(url);
+                        console.error("GLTF load error:", error);
+                        reject(new Error("Failed to load GLB/GLTF file"));
+                    }
+                );
+            });
+        }
+        
+        function loadOBJModel(file) {
+            return new Promise((resolve, reject) => {
+                const loader = new THREE.OBJLoader();
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const model = loader.parse(event.target.result);
+                        
+                        model.traverse((child) => {
+                            if (child.isMesh) {
+                                const material = createMaterial(currentMaterialType, document.getElementById('model-color').value, wireframeVisible);
+                                child.material = material;
+                            }
+                        });
+                        
+                        resolve(model);
+                    } catch (error) {
+                        console.error("OBJ load error:", error);
+                        reject(new Error("Failed to load OBJ file"));
+                    }
+                };
+                
+                reader.onerror = function(error) {
+                    reject(new Error("Failed to read OBJ file"));
+                };
+                
+                reader.readAsText(file);
+            });
+        }
+        
+        function loadModel(file) {
+            updateStatus("Loading 3D model...", false);
+            showLoading(true);
+            
+            if (currentModel) {
+                scene.remove(currentModel);
+            }
+            
+            const fileExtension = file.name.toLowerCase().split('.').pop();
+            let loadPromise;
+            
+            if (fileExtension === 'stl') {
+                loadPromise = loadSTLModel(file);
+            } else if (fileExtension === 'glb' || fileExtension === 'gltf') {
+                loadPromise = loadGLTFModel(file);
+            } else if (fileExtension === 'obj') {
+                loadPromise = loadOBJModel(file);
+            } else {
+                updateStatus("Unsupported file format", true);
+                showLoading(false);
+                return;
+            }
+            
+            loadPromise
+                .then(model => {
+                    const container = new THREE.Group();
+                    container.add(model);
+                    
+                    const box = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    
+                    model.position.x = -center.x;
+                    model.position.y = -center.y;
+                    model.position.z = -center.z;
+                    
+                    currentModel = container;
+                    scene.add(currentModel);
+                    
+                    storeOriginalMaterials(currentModel);
+                    
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const fov = camera.fov * (Math.PI / 180);
+                    let cameraZ = Math.abs(maxDim / (2 * Math.tan(fov / 2)));
+                    
+                    camera.position.set(0, 0, cameraZ * 1.5);
+                    controls.target.set(0, 0, 0);
+                    controls.update();
+                    
+                    showLoading(false);
+                    updateStatus(`3D model loaded successfully: ${file.name}`, false);
+                })
+                .catch(error => {
+                    console.error("Model load error:", error);
+                    showLoading(false);
+                    updateStatus(`Error: ${error.message}`, true);
+                });
+        }
+        
+        // Event listeners
+        document.getElementById('file-input').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const fileExtension = file.name.toLowerCase().split('.').pop();
+                const supportedFormats = ['stl', 'glb', 'gltf', 'obj'];
+                
+                if (supportedFormats.includes(fileExtension)) {
+                    loadModel(file);
+                } else {
+                    updateStatus("Please select a STL, GLB, or OBJ file", true);
+                }
+            }
+        });
+        
+        // Material type buttons
+        document.querySelectorAll('.material-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                changeMaterialType(this.dataset.material);
+            });
+        });
+        
+        // Material property sliders
+        document.getElementById('metalness').addEventListener('input', function() {
+            updateMaterialProperties();
+        });
+        
+        document.getElementById('roughness').addEventListener('input', function() {
+            updateMaterialProperties();
+        });
+        
+        document.getElementById('shininess').addEventListener('input', function() {
+            updateMaterialProperties();
+        });
+        
+        // Screenshot functionality
+        document.getElementById('take-screenshot').addEventListener('click', takeScreenshot);
+        document.getElementById('download-annotated-screenshot').addEventListener('click', downloadAnnotatedScreenshot);
+        document.getElementById('close-preview').addEventListener('click', closePreview);
+        document.getElementById('close-preview-top').addEventListener('click', closePreview);
+        
+        // Annotation event listeners
+        document.getElementById('default-annotation-radius').addEventListener('input', updateDefaultAnnotationRadius);
+        document.getElementById('selected-annotation-radius').addEventListener('input', updateSelectedAnnotationRadius);
+        document.getElementById('clear-annotations').addEventListener('click', clearAnnotations);
+        document.getElementById('delete-selected-annotation').addEventListener('click', deleteSelectedAnnotation);
+        
+        // Comment event listeners
+        document.getElementById('save-comment').addEventListener('click', saveComment);
+        document.getElementById('comment-type').addEventListener('change', function() {
+            if (this.value === 'custom') {
+                document.getElementById('custom-comment-container').style.display = 'block';
+            } else {
+                document.getElementById('custom-comment-container').style.display = 'none';
+                saveComment();
+            }
+        });
+        
+        // Annotation canvas event listeners
+        document.getElementById('annotation-canvas').addEventListener('mousedown', function(event) {
+            const rect = annotationCanvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            const annotation = getAnnotationAt(x, y);
+            
+            if (annotation) {
+                if (event.ctrlKey || event.metaKey) {
+                    selectAnnotation(annotation);
+                } else {
+                    isDraggingAnnotation = true;
+                    draggedAnnotation = annotation;
+                    selectAnnotation(annotation);
+                }
+            } else {
+                addAnnotation(x, y);
+                selectAnnotation(annotations[annotations.length - 1]);
+            }
+        });
+        
+        document.getElementById('annotation-canvas').addEventListener('mousemove', function(event) {
+            if (isDraggingAnnotation && draggedAnnotation) {
+                const rect = annotationCanvas.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+                
+                draggedAnnotation.x = x;
+                draggedAnnotation.y = y;
+                redrawAnnotations();
+            }
+        });
+        
+        document.getElementById('annotation-canvas').addEventListener('mouseup', function() {
+            isDraggingAnnotation = false;
+            draggedAnnotation = null;
+        });
+        
+        document.getElementById('annotation-canvas').addEventListener('mouseleave', function() {
+            isDraggingAnnotation = false;
+            draggedAnnotation = null;
+        });
+        
+        document.getElementById('annotation-canvas').addEventListener('click', function(event) {
+            const rect = annotationCanvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            const annotation = getAnnotationAt(x, y);
+            
+            if (!annotation && !isDraggingAnnotation) {
+                selectAnnotation(null);
+            }
+        });
+        
+        document.getElementById('screenshot-image').addEventListener('load', function() {
+            screenshotImg = this;
+        });
+        
+        document.getElementById('reset-view').addEventListener('click', function() {
+            controls.reset();
+            updateStatus("View reset", false);
+        });
+        
+        document.getElementById('toggle-grid').addEventListener('click', function() {
+            gridVisible = !gridVisible;
+            gridHelper.visible = gridVisible;
+            this.textContent = "Grid: " + (gridVisible ? "On" : "Off");
+            updateStatus("Grid " + (gridVisible ? "enabled" : "disabled"), false);
+        });
+        
+        document.getElementById('toggle-axes').addEventListener('click', function() {
+            axesVisible = !axesVisible;
+            axesHelper.visible = axesVisible;
+            this.textContent = "Axes: " + (axesVisible ? "On" : "Off");
+            updateStatus("Axes " + (axesVisible ? "enabled" : "disabled"), false);
+        });
+        
+        document.getElementById('bg-dark').addEventListener('click', function() {
+            scene.background = new THREE.Color(0x2c3e50);
+            updateStatus("Dark background enabled", false);
+        });
+        
+        document.getElementById('bg-light').addEventListener('click', function() {
+            scene.background = new THREE.Color(0xcccccc);
+            updateStatus("Light background enabled", false);
+        });
+        
+        document.getElementById('bg-gradient').addEventListener('click', function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const context = canvas.getContext('2d');
+            
+            const gradient = context.createLinearGradient(0, 0, 256, 256);
+            gradient.addColorStop(0, '#1a2a6c');
+            gradient.addColorStop(0.5, '#b21f1f');
+            gradient.addColorStop(1, '#fdbb2d');
+            
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, 256, 256);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            scene.background = texture;
+            updateStatus("Gradient background enabled", false);
+        });
+        
+        document.getElementById('model-color').addEventListener('input', function() {
+            updateModelColor();
+        });
+        
+        document.getElementById('toggle-wireframe').addEventListener('click', function() {
+            toggleWireframe();
+            updateStatus("Wireframe " + (wireframeVisible ? "enabled" : "disabled"), false);
+        });
+        
+        document.getElementById('toggle-rotation').addEventListener('click', function() {
+            toggleRotation();
+            updateStatus("Auto rotation " + (autoRotation ? "enabled" : "disabled"), false);
+        });
+        
+        document.getElementById('rotation-direction').addEventListener('click', function() {
+            toggleRotationDirection();
+            updateStatus("Rotation direction: " + (rotationDirection > 0 ? "clockwise" : "counter-clockwise"), false);
+        });
+        
+        document.getElementById('rotation-speed').addEventListener('input', function() {
+            updateRotationSpeed();
+        });
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (autoRotation && currentModel) {
+                currentModel.rotation.y += rotationSpeed * 0.01 * rotationDirection;
+            }
+            
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        // Initialize and start
+        initModelSelection();
+        animate();
+    </script>
+</body>
+</html>
