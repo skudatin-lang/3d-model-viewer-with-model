@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Model Viewer PRO - GitHub Version</title>
+    <title>3D Model Viewer PRO</title>
     <style>
-        /* Все ваши стили остаются без изменений */
+        /* Все стили остаются без изменений */
         * {
             margin: 0;
             padding: 0;
@@ -24,7 +24,7 @@
         }
         .container {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -230,114 +230,79 @@
             text-align: center;
         }
         
-        /* Model Selection Styles - УПРОЩЕНО */
-        .model-info {
-            background: rgba(67, 97, 238, 0.2);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            margin: 10px 5px;
-        }
-        .model-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-        
+        /* UPDATED: Improved screenshot preview layout */
         .screenshot-preview {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             z-index: 1000;
             display: none;
             flex-direction: column;
             padding: 20px;
-            overflow-y: auto;
+            overflow: hidden;
         }
+        
         .screenshot-preview-content {
-            max-width: 1200px;
-            margin: 0 auto;
+            width: 100%;
+            height: 100%;
             display: flex;
-            flex-direction: column;
-            gap: 15px;
+            gap: 20px;
             background: rgba(30, 30, 40, 0.9);
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
-        .screenshot-preview h3 {
-            text-align: center;
-            margin-bottom: 10px;
+        
+        .screenshot-main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 0; /* Important for flexbox with images */
         }
+        
+        .screenshot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444;
+        }
+        
+        .screenshot-header h3 {
+            margin: 0;
+            color: #ff9d00;
+        }
+        
         .screenshot-image-container {
+            flex: 1;
             display: flex;
             justify-content: center;
-            max-height: 70vh;
-            overflow: auto;
-            border-radius: 5px;
+            align-items: center;
             background: #1a1a1a;
+            border-radius: 8px;
             padding: 10px;
+            overflow: auto;
+            position: relative;
         }
-        .screenshot-image-container img {
+        
+        .annotation-canvas-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        #screenshot-image {
             max-width: 100%;
             max-height: 100%;
             border-radius: 5px;
             border: 2px solid #fff;
         }
-        .screenshot-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .screenshot-buttons button {
-            width: auto;
-            padding: 10px 20px;
-            min-width: 180px;
-        }
-        footer {
-            margin-top: 30px;
-            text-align: center;
-            opacity: 0.7;
-            font-size: 0.9rem;
-        }
         
-        .annotation-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-            background: rgba(40, 40, 50, 0.7);
-            padding: 15px;
-            border-radius: 5px;
-        }
-        .annotation-control-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .annotation-control-row label {
-            min-width: 120px;
-        }
-        .annotation-control-row input {
-            flex: 1;
-        }
-        .annotation-buttons {
-            display: flex;
-            gap: 5px;
-        }
-        .annotation-buttons button {
-            flex: 1;
-            padding: 8px;
-            font-size: 12px;
-        }
-        .annotation-canvas-container {
-            position: relative;
-            display: inline-block;
-            max-width: 100%;
-        }
         #annotation-canvas {
             position: absolute;
             top: 0;
@@ -347,30 +312,92 @@
             cursor: crosshair;
         }
         
-        .annotation-list {
-            max-height: 150px;
+        .screenshot-sidebar {
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: rgba(40, 40, 50, 0.8);
+            border-radius: 8px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .annotation-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .annotation-control-group {
+            background: rgba(50, 50, 60, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .annotation-control-group h4 {
+            margin-bottom: 10px;
+            color: #4cc9f0;
+            font-size: 16px;
+        }
+        
+        .annotation-control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px 0;
+        }
+        
+        .annotation-control-row label {
+            min-width: 120px;
+            font-size: 14px;
+        }
+        
+        .annotation-control-row input {
+            flex: 1;
+        }
+        
+        .annotation-buttons {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .annotation-buttons button {
+            flex: 1;
+            padding: 8px;
+            font-size: 12px;
+            margin: 0;
+        }
+        
+        .annotation-list-container {
+            max-height: 200px;
             overflow-y: auto;
             margin-top: 10px;
             background: rgba(30, 30, 40, 0.7);
             border-radius: 5px;
             padding: 5px;
         }
+        
         .annotation-item {
             display: flex;
             align-items: center;
-            padding: 5px;
+            padding: 8px;
             margin: 3px 0;
             border-radius: 3px;
             cursor: pointer;
             transition: background 0.2s;
         }
+        
         .annotation-item:hover {
             background: rgba(255, 255, 255, 0.1);
         }
+        
         .annotation-item.selected {
             background: rgba(76, 201, 240, 0.3);
             border: 1px solid #4cc9f0;
         }
+        
         .annotation-number {
             display: inline-block;
             width: 24px;
@@ -383,45 +410,13 @@
             font-size: 12px;
             font-weight: bold;
         }
+        
         .annotation-size {
             margin-left: auto;
             font-size: 12px;
             opacity: 0.8;
         }
         
-        .comment-controls {
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(50, 50, 60, 0.7);
-            border-radius: 5px;
-            display: none;
-        }
-        .comment-control-row {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            margin-bottom: 10px;
-        }
-        .comment-control-row label {
-            font-size: 14px;
-        }
-        .comment-control-row select, 
-        .comment-control-row input {
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid #555;
-            background: rgba(30, 30, 40, 0.8);
-            color: white;
-        }
-        .comment-control-row textarea {
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid #555;
-            background: rgba(30, 30, 40, 0.8);
-            color: white;
-            resize: vertical;
-            min-height: 60px;
-        }
         .comment-indicator {
             display: inline-block;
             width: 8px;
@@ -431,6 +426,66 @@
             margin-left: 5px;
         }
         
+        /* Comment controls */
+        .comment-controls {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(50, 50, 60, 0.7);
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .comment-control-row {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .comment-control-row label {
+            font-size: 14px;
+        }
+        
+        .comment-control-row select, 
+        .comment-control-row input {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background: rgba(30, 30, 40, 0.8);
+            color: white;
+        }
+        
+        .comment-control-row textarea {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background: rgba(30, 30, 40, 0.8);
+            color: white;
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        .screenshot-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .screenshot-buttons button {
+            width: auto;
+            padding: 10px 20px;
+            min-width: 180px;
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        /* NEW: Close button at top right */
         .close-preview-top {
             position: absolute;
             top: 30px;
@@ -449,9 +504,129 @@
             z-index: 1001;
             transition: all 0.3s;
         }
+        
         .close-preview-top:hover {
             background: rgba(255, 255, 255, 0.3);
             transform: scale(1.1);
+        }
+        
+        /* NEW: Share link controls */
+        .share-controls {
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .share-link-container {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        
+        .share-link-container input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background: rgba(30, 30, 40, 0.8);
+            color: white;
+        }
+        
+        .share-link-container button {
+            width: auto;
+            padding: 8px 12px;
+        }
+        
+        .share-info {
+            font-size: 12px;
+            opacity: 0.8;
+            text-align: center;
+            margin-top: 5px;
+        }
+        
+        /* NEW: File size warning */
+        .file-size-warning {
+            color: #ff6b6b;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        /* NEW: Progress bar for large files */
+        .upload-progress {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .upload-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4cc9f0, #4361ee);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .upload-status {
+            font-size: 12px;
+            text-align: center;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        /* NEW: Zoom controls */
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 10;
+        }
+        
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(30, 30, 40, 0.8);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .zoom-btn:hover {
+            background: rgba(50, 50, 60, 0.9);
+        }
+        
+        .zoom-level {
+            position: absolute;
+            bottom: 70px;
+            right: 20px;
+            background: rgba(30, 30, 40, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 1024px) {
+            .screenshot-preview-content {
+                flex-direction: column;
+            }
+            
+            .screenshot-sidebar {
+                width: 100%;
+                max-height: 300px;
+            }
         }
         
         @media (max-width: 768px) {
@@ -459,25 +634,49 @@
                 flex-direction: column;
                 align-items: center;
             }
+            
             #controls {
                 width: 100%;
                 max-width: 300px;
             }
+            
+            .screenshot-preview {
+                padding: 10px;
+            }
+            
             .screenshot-preview-content {
                 padding: 15px;
             }
+            
             .annotation-control-row {
                 flex-direction: column;
                 align-items: flex-start;
             }
+            
             .annotation-control-row label {
                 min-width: auto;
             }
+            
             .screenshot-buttons {
                 flex-direction: column;
             }
+            
             .screenshot-buttons button {
                 width: 100%;
+            }
+            
+            .share-link-container {
+                flex-direction: column;
+            }
+            
+            .zoom-controls {
+                bottom: 10px;
+                right: 10px;
+            }
+            
+            .zoom-level {
+                bottom: 60px;
+                right: 10px;
             }
         }
     </style>
@@ -486,7 +685,7 @@
     <div class="container">
         <header>
             <h1>3D Model Viewer PRO</h1>
-            <p class="subtitle">Загружает модель default.stl из репозитория GitHub</p>
+            <p class="subtitle">Professional 3D model viewer with material controls and annotation tools</p>
         </header>
 
         <div class="viewer-container">
@@ -500,24 +699,32 @@
 
             <div id="controls">
                 <div class="control-group">
-                    <h3>Model Info</h3>
-                    <div class="model-info">
-                        <div class="model-icon">🔷</div>
-                        <h4>Default Model</h4>
-                        <p>Загружается из репозитория GitHub</p>
-                        <button id="reload-model" class="screenshot-btn">Reload Model</button>
-                    </div>
-                    <p class="format-info">Файл: default.stl из папки models</p>
-                </div>
-
-                <div class="control-group">
                     <h3>File Upload</h3>
                     <div class="file-input-container">
                         <label for="file-input" class="file-input-label">
-                            Upload Your Own Model
+                            Choose 3D Model File
                         </label>
                         <input type="file" id="file-input" accept=".stl,.glb,.obj">
-                        <p class="format-info">Supports: STL, GLB, OBJ formats</p>
+                        <p class="format-info">Supports: STL, GLB, OBJ formats (up to 100MB)</p>
+                        <p class="file-size-warning" id="file-size-warning">
+                            Large files may take longer to process
+                        </p>
+                        <div class="upload-progress" id="upload-progress">
+                            <div class="upload-progress-bar" id="upload-progress-bar"></div>
+                        </div>
+                        <div class="upload-status" id="upload-status"></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Share Model</h3>
+                    <button id="generate-link" class="screenshot-btn">Generate Temporary Link</button>
+                    <div class="share-controls" id="share-controls">
+                        <div class="share-link-container">
+                            <input type="text" id="share-link" readonly>
+                            <button id="copy-link">Copy</button>
+                        </div>
+                        <p class="share-info">This link will be valid for 24 hours</p>
                     </div>
                 </div>
 
@@ -583,90 +790,110 @@
                     <button id="take-screenshot" class="screenshot-btn">Take Screenshot</button>
                 </div>
 
-                <div class="status" id="status">Loading default model from GitHub...</div>
+                <div class="status" id="status">Ready to load 3D model</div>
             </div>
         </div>
 
+        <!-- UPDATED: Improved screenshot preview layout -->
         <div class="screenshot-preview" id="screenshot-preview">
             <button class="close-preview-top" id="close-preview-top">×</button>
             <div class="screenshot-preview-content">
-                <h3>Screenshot Preview with Annotations</h3>
-                
-                <div class="annotation-controls">
-                    <div class="annotation-control-row">
-                        <label for="default-annotation-radius">Default Marker Radius:</label>
-                        <input type="range" id="default-annotation-radius" min="10" max="50" value="20">
-                        <span id="default-radius-value">20px</span>
+                <div class="screenshot-main-area">
+                    <div class="screenshot-header">
+                        <h3>Screenshot with Annotations</h3>
                     </div>
-                    
-                    <div id="selected-annotation-controls" style="display: none;">
-                        <div class="annotation-control-row">
-                            <label for="selected-annotation-radius">Selected Marker Radius:</label>
-                            <input type="range" id="selected-annotation-radius" min="10" max="50" value="20">
-                            <span id="selected-radius-value">20px</span>
+                    <div class="screenshot-image-container">
+                        <div class="annotation-canvas-container">
+                            <img id="screenshot-image" src="" alt="Screenshot">
+                            <canvas id="annotation-canvas"></canvas>
                         </div>
-                        
-                        <div class="comment-controls" id="comment-controls">
-                            <div class="comment-control-row">
-                                <label for="comment-type">Comment Type:</label>
-                                <select id="comment-type">
-                                    <option value="">No comment</option>
-                                    <option value="make_more_convex">Сделать более выпуклым</option>
-                                    <option value="make_more_concave">Сделать более вдавленным</option>
-                                    <option value="make_narrower_width">Сделать уже по ширине</option>
-                                    <option value="make_wider_width">Сделать шире по ширине</option>
-                                    <option value="make_narrower_height">Сделать уже по высоте</option>
-                                    <option value="make_wider_height">Сделать шире по высоте</option>
-                                    <option value="custom">Свой вариант</option>
-                                </select>
-                            </div>
-                            
-                            <div class="comment-control-row" id="custom-comment-container" style="display: none;">
-                                <label for="custom-comment">Custom Comment:</label>
-                                <textarea id="custom-comment" placeholder="Введите ваш комментарий..."></textarea>
-                            </div>
-                            
-                            <div class="comment-control-row">
-                                <button id="save-comment" class="screenshot-btn">Save Comment</button>
-                            </div>
-                        </div>
-                        
-                        <div style="text-align: center; font-size: 12px; margin-top: 5px;">
-                            Editing Marker <span id="selected-annotation-number">1</span>
+                        <div class="zoom-controls">
+                            <div class="zoom-level" id="zoom-level">100%</div>
+                            <button class="zoom-btn" id="zoom-in">+</button>
+                            <button class="zoom-btn" id="zoom-out">-</button>
+                            <button class="zoom-btn" id="zoom-reset">⟲</button>
                         </div>
                     </div>
-                    
-                    <div class="annotation-buttons">
-                        <button id="clear-annotations" class="screenshot-btn">Clear All Markers</button>
-                        <button id="delete-selected-annotation" class="screenshot-btn">Delete Selected</button>
-                    </div>
-                    
-                    <div class="annotation-list" id="annotation-list">
-                        <!-- Annotation items will be added here dynamically -->
-                    </div>
-                    
-                    <p style="font-size: 12px; text-align: center; margin-top: 10px;">
-                        Click on the image to add markers. Drag to move markers.<br>
-                        Click on a marker in the list to select and edit it.
-                    </p>
-                </div>
-                
-                <div class="screenshot-image-container">
-                    <div class="annotation-canvas-container">
-                        <img id="screenshot-image" src="" alt="Screenshot">
-                        <canvas id="annotation-canvas"></canvas>
+                    <div class="screenshot-buttons">
+                        <button id="download-annotated-screenshot" class="screenshot-btn">Download with Markers & Comments</button>
+                        <button id="close-preview">Close Preview</button>
                     </div>
                 </div>
                 
-                <div class="screenshot-buttons">
-                    <button id="download-annotated-screenshot" class="screenshot-btn">Download with Markers & Comments</button>
-                    <button id="close-preview">Close</button>
+                <div class="screenshot-sidebar">
+                    <div class="annotation-controls">
+                        <div class="annotation-control-group">
+                            <h4>Marker Settings</h4>
+                            <div class="annotation-control-row">
+                                <label for="default-annotation-radius">Default Radius:</label>
+                                <input type="range" id="default-annotation-radius" min="10" max="50" value="20">
+                                <span id="default-radius-value">20px</span>
+                            </div>
+                            
+                            <div id="selected-annotation-controls" style="display: none;">
+                                <div class="annotation-control-row">
+                                    <label for="selected-annotation-radius">Selected Radius:</label>
+                                    <input type="range" id="selected-annotation-radius" min="10" max="50" value="20">
+                                    <span id="selected-radius-value">20px</span>
+                                </div>
+                                
+                                <div style="text-align: center; font-size: 12px; margin-top: 5px;">
+                                    Editing Marker <span id="selected-annotation-number">1</span>
+                                </div>
+                            </div>
+                            
+                            <div class="annotation-buttons">
+                                <button id="clear-annotations" class="screenshot-btn">Clear All</button>
+                                <button id="delete-selected-annotation" class="screenshot-btn">Delete Selected</button>
+                            </div>
+                        </div>
+                        
+                        <div class="annotation-control-group">
+                            <h4>Comments</h4>
+                            <!-- Comment controls for selected annotation -->
+                            <div class="comment-controls" id="comment-controls">
+                                <div class="comment-control-row">
+                                    <label for="comment-type">Comment Type:</label>
+                                    <select id="comment-type">
+                                        <option value="">No comment</option>
+                                        <option value="make_more_convex">Сделать более выпуклым</option>
+                                        <option value="make_more_concave">Сделать более вдавленным</option>
+                                        <option value="make_narrower_width">Сделать уже по ширине</option>
+                                        <option value="make_wider_width">Сделать шире по ширине</option>
+                                        <option value="make_narrower_height">Сделать уже по высоте</option>
+                                        <option value="make_wider_height">Сделать шире по высоте</option>
+                                        <option value="custom">Свой вариант</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="comment-control-row" id="custom-comment-container" style="display: none;">
+                                    <label for="custom-comment">Custom Comment:</label>
+                                    <textarea id="custom-comment" placeholder="Введите ваш комментарий..."></textarea>
+                                </div>
+                                
+                                <div class="comment-control-row">
+                                    <button id="save-comment" class="screenshot-btn">Save Comment</button>
+                                </div>
+                            </div>
+                            <p style="font-size: 12px; text-align: center; margin-top: 10px;">
+                                Click on the image to add markers. Drag to move markers.<br>
+                                Click on a marker in the list to select and edit it.
+                            </p>
+                        </div>
+                        
+                        <div class="annotation-control-group">
+                            <h4>Markers List</h4>
+                            <div class="annotation-list-container" id="annotation-list">
+                                <!-- Annotation items will be added here dynamically -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <footer>
-            <p>3D Model Viewer PRO | Model: default.stl from GitHub repository</p>
+            <p>3D Model Viewer PRO | Professional material controls, rendering and annotation tools</p>
         </footer>
     </div>
 
@@ -677,18 +904,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/OBJLoader.js"></script>
 
     <script>
-        // =============================================
-        // КОНФИГУРАЦИЯ - ТОЛЬКО ОДНА МОДЕЛЬ
-        // =============================================
-        
-        const GITHUB_USERNAME = 'skudatin-lang';
-        const GITHUB_REPOSITORY = '3d-model-viewer-with-model';
-        const GITHUB_BRANCH = 'main';
-        
-        // Ссылка на единственную модель
-        const DEFAULT_MODEL_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/${GITHUB_BRANCH}/models/default.stl`;
-
-        // Основные переменные
+        // Initialize variables
         let currentModel = null;
         let gridVisible = true;
         let axesVisible = true;
@@ -700,6 +916,17 @@
         let currentMaterialType = 'phong';
         let gridHelper, axesHelper;
         let currentScreenshotUrl = null;
+        let currentModelFile = null;
+        
+        // NEW: Database for storing models
+        let db = null;
+        const DB_NAME = 'ModelViewerDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'models';
+        
+        // NEW: File size limits
+        const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
+        const WARNING_FILE_SIZE = 10 * 1024 * 1024; // 10 MB (show warning)
         
         // Annotation variables
         let annotations = [];
@@ -710,6 +937,12 @@
         let draggedAnnotation = null;
         let annotationCanvas, annotationCtx;
         let screenshotImg;
+        
+        // NEW: Zoom variables
+        let zoomLevel = 1.0;
+        const ZOOM_STEP = 0.1;
+        const MIN_ZOOM = 0.5;
+        const MAX_ZOOM = 3.0;
         
         // Comment options mapping
         const commentOptions = {
@@ -722,6 +955,171 @@
             "custom": "Свой вариант"
         };
         
+        // NEW: Initialize IndexedDB
+        function initDatabase() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = function(event) {
+                    console.error("Database error:", event.target.error);
+                    reject(event.target.error);
+                };
+                
+                request.onsuccess = function(event) {
+                    db = event.target.result;
+                    console.log("Database opened successfully");
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = function(event) {
+                    const database = event.target.result;
+                    
+                    // Create object store if it doesn't exist
+                    if (!database.objectStoreNames.contains(STORE_NAME)) {
+                        const objectStore = database.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                        objectStore.createIndex('timestamp', 'timestamp', { unique: false });
+                        console.log("Object store created");
+                    }
+                };
+            });
+        }
+        
+        // NEW: Store model in IndexedDB with progress tracking
+        function storeModelInDB(modelId, modelData) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error("Database not initialized"));
+                    return;
+                }
+                
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                
+                const data = {
+                    id: modelId,
+                    name: modelData.name,
+                    type: modelData.type,
+                    data: modelData.data,
+                    timestamp: Date.now(),
+                    expires: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
+                };
+                
+                const request = objectStore.add(data);
+                
+                request.onsuccess = function() {
+                    console.log("Model stored successfully");
+                    resolve();
+                };
+                
+                request.onerror = function(event) {
+                    console.error("Error storing model:", event.target.error);
+                    
+                    // Check if it's a quota error
+                    if (event.target.error.name === 'QuotaExceededError') {
+                        reject(new Error("Not enough storage space. Please free up some space and try again."));
+                    } else {
+                        reject(event.target.error);
+                    }
+                };
+            });
+        }
+        
+        // NEW: Get model from IndexedDB
+        function getModelFromDB(modelId) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error("Database not initialized"));
+                    return;
+                }
+                
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.get(modelId);
+                
+                request.onsuccess = function() {
+                    const result = request.result;
+                    if (result) {
+                        // Check if model has expired
+                        if (result.expires && Date.now() > result.expires) {
+                            // Delete expired model
+                            deleteModelFromDB(modelId);
+                            reject(new Error("Model has expired"));
+                        } else {
+                            resolve(result);
+                        }
+                    } else {
+                        reject(new Error("Model not found"));
+                    }
+                };
+                
+                request.onerror = function(event) {
+                    reject(event.target.error);
+                };
+            });
+        }
+        
+        // NEW: Delete model from IndexedDB
+        function deleteModelFromDB(modelId) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error("Database not initialized"));
+                    return;
+                }
+                
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.delete(modelId);
+                
+                request.onsuccess = function() {
+                    console.log("Model deleted successfully");
+                    resolve();
+                };
+                
+                request.onerror = function(event) {
+                    reject(event.target.error);
+                };
+            });
+        }
+        
+        // NEW: Clean up expired models
+        function cleanupExpiredModels() {
+            if (!db) return;
+            
+            const transaction = db.transaction([STORE_NAME], 'readwrite');
+            const objectStore = transaction.objectStore(STORE_NAME);
+            const index = objectStore.index('timestamp');
+            const request = index.openCursor();
+            
+            request.onsuccess = function(event) {
+                const cursor = event.target.result;
+                if (cursor) {
+                    const model = cursor.value;
+                    if (model.expires && Date.now() > model.expires) {
+                        cursor.delete();
+                        console.log("Deleted expired model:", model.id);
+                    }
+                    cursor.continue();
+                }
+            };
+        }
+        
+        // NEW: Estimate available storage
+        async function estimateStorage() {
+            if ('storage' in navigator && 'estimate' in navigator.storage) {
+                try {
+                    const estimation = await navigator.storage.estimate();
+                    return {
+                        usage: estimation.usage,
+                        quota: estimation.quota
+                    };
+                } catch (error) {
+                    console.error("Storage estimation failed:", error);
+                    return null;
+                }
+            }
+            return null;
+        }
+        
         // Initialize scene, camera, and renderer
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x2c3e50);
@@ -733,7 +1131,7 @@
         const renderer = new THREE.WebGLRenderer({ 
             canvas: document.getElementById('canvas'), 
             antialias: true,
-            preserveDrawingBuffer: true
+            preserveDrawingBuffer: true // Important for screenshots!
         });
         
         // Set renderer size
@@ -792,6 +1190,235 @@
         // Show/hide loading indicator
         function showLoading(show) {
             document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        // NEW: Show upload progress
+        function showUploadProgress(show, percent = 0, message = '') {
+            const progressContainer = document.getElementById('upload-progress');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const statusElement = document.getElementById('upload-status');
+            
+            if (show) {
+                progressContainer.style.display = 'block';
+                statusElement.style.display = 'block';
+                progressBar.style.width = percent + '%';
+                statusElement.textContent = message;
+            } else {
+                progressContainer.style.display = 'none';
+                statusElement.style.display = 'none';
+            }
+        }
+        
+        // NEW: Generate temporary link for the current model
+        async function generateTemporaryLink() {
+            if (!currentModelFile) {
+                updateStatus("No model loaded to share", true);
+                return;
+            }
+            
+            // Check file size
+            if (currentModelFile.size > MAX_FILE_SIZE) {
+                updateStatus(`File too large for sharing (max ${MAX_FILE_SIZE / (1024 * 1024)}MB)`, true);
+                return;
+            }
+            
+            updateStatus("Generating shareable link...", false);
+            showUploadProgress(true, 0, "Preparing model for sharing...");
+            
+            try {
+                // Check available storage
+                const storageInfo = await estimateStorage();
+                if (storageInfo && storageInfo.quota) {
+                    const availableSpace = storageInfo.quota - storageInfo.usage;
+                    if (availableSpace < currentModelFile.size * 2) {
+                        showUploadProgress(false);
+                        updateStatus("Not enough storage space to generate link", true);
+                        return;
+                    }
+                }
+                
+                // Create a unique ID for this model
+                const modelId = 'model_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                
+                // Read the file with progress tracking
+                showUploadProgress(true, 10, "Reading model file...");
+                const modelData = await readFileAsArrayBufferWithProgress(currentModelFile, 
+                    (percent) => {
+                        showUploadProgress(true, 10 + percent * 0.6, `Reading file: ${Math.round(percent)}%`);
+                    });
+                
+                // Store in IndexedDB
+                showUploadProgress(true, 70, "Storing model in database...");
+                await storeModelInDB(modelId, {
+                    name: currentModelFile.name,
+                    type: currentModelFile.type,
+                    data: modelData
+                });
+                
+                // Generate the shareable URL
+                showUploadProgress(true, 100, "Generating link...");
+                const shareUrl = window.location.origin + window.location.pathname + '?model=' + modelId;
+                
+                // Display the link
+                document.getElementById('share-link').value = shareUrl;
+                document.getElementById('share-controls').style.display = 'block';
+                
+                showUploadProgress(false);
+                updateStatus("Temporary link generated. It will be valid for 24 hours.", false);
+            } catch (error) {
+                console.error("Error generating link:", error);
+                showUploadProgress(false);
+                updateStatus("Error generating link: " + error.message, true);
+            }
+        }
+        
+        // NEW: Read file as ArrayBuffer with progress tracking
+        function readFileAsArrayBufferWithProgress(file, progressCallback) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                let lastPercent = 0;
+                
+                reader.onload = function(e) {
+                    resolve(e.target.result);
+                };
+                
+                reader.onerror = function() {
+                    reject(new Error("Failed to read file"));
+                };
+                
+                reader.onprogress = function(event) {
+                    if (event.lengthComputable) {
+                        const percent = Math.round((event.loaded / event.total) * 100);
+                        if (percent > lastPercent) {
+                            lastPercent = percent;
+                            progressCallback(percent);
+                        }
+                    }
+                };
+                
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        
+        // NEW: Copy link to clipboard
+        function copyLinkToClipboard() {
+            const shareLink = document.getElementById('share-link');
+            shareLink.select();
+            shareLink.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                navigator.clipboard.writeText(shareLink.value).then(function() {
+                    updateStatus("Link copied to clipboard", false);
+                }).catch(function() {
+                    // Fallback for older browsers
+                    document.execCommand('copy');
+                    updateStatus("Link copied to clipboard", false);
+                });
+            } catch (error) {
+                // Final fallback
+                document.execCommand('copy');
+                updateStatus("Link copied to clipboard", false);
+            }
+        }
+        
+        // NEW: Load model from URL parameter
+        async function loadModelFromUrlParam() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const modelId = urlParams.get('model');
+            
+            if (modelId) {
+                updateStatus("Loading shared model...", false);
+                showLoading(true);
+                
+                try {
+                    // Retrieve model data from IndexedDB
+                    const modelData = await getModelFromDB(modelId);
+                    
+                    // Convert ArrayBuffer back to Blob
+                    const blob = new Blob([modelData.data], { type: modelData.type });
+                    
+                    // Create a File-like object
+                    const file = new File([blob], modelData.name, { type: modelData.type });
+                    
+                    // Load the model
+                    currentModelFile = file;
+                    await loadModel(file);
+                    
+                    updateStatus("Shared model loaded successfully", false);
+                } catch (error) {
+                    console.error("Error loading shared model:", error);
+                    updateStatus("Error loading shared model: " + error.message, true);
+                    showLoading(false);
+                }
+            }
+        }
+        
+        // NEW: Check file size and show warning
+        function checkFileSize(file) {
+            const warningElement = document.getElementById('file-size-warning');
+            
+            if (file.size > MAX_FILE_SIZE) {
+                warningElement.style.display = 'block';
+                warningElement.textContent = `File too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB.`;
+                warningElement.style.color = '#ff4444';
+                return false;
+            } else if (file.size > WARNING_FILE_SIZE) {
+                warningElement.style.display = 'block';
+                warningElement.textContent = `Large file (${(file.size / (1024 * 1024)).toFixed(1)}MB). Loading may take some time.`;
+                warningElement.style.color = '#ffa726';
+                return true;
+            } else {
+                warningElement.style.display = 'none';
+                return true;
+            }
+        }
+        
+        // NEW: Zoom functions
+        function zoomIn() {
+            if (zoomLevel < MAX_ZOOM) {
+                zoomLevel += ZOOM_STEP;
+                applyZoom();
+            }
+        }
+        
+        function zoomOut() {
+            if (zoomLevel > MIN_ZOOM) {
+                zoomLevel -= ZOOM_STEP;
+                applyZoom();
+            }
+        }
+        
+        function resetZoom() {
+            zoomLevel = 1.0;
+            applyZoom();
+        }
+        
+        function applyZoom() {
+            const img = document.getElementById('screenshot-image');
+            const container = document.querySelector('.annotation-canvas-container');
+            
+            if (img && container) {
+                // Вместо transform используем изменение размеров
+                const originalWidth = img.naturalWidth;
+                const originalHeight = img.naturalHeight;
+                
+                const scaledWidth = originalWidth * zoomLevel;
+                const scaledHeight = originalHeight * zoomLevel;
+                
+                // Обновляем размеры canvas
+                annotationCanvas.width = scaledWidth;
+                annotationCanvas.height = scaledHeight;
+                
+                // Обновляем размеры контейнера
+                container.style.width = scaledWidth + 'px';
+                container.style.height = scaledHeight + 'px';
+                
+                // Перерисовываем аннотации
+                redrawAnnotations();
+                
+                // Update zoom level display
+                document.getElementById('zoom-level').textContent = Math.round(zoomLevel * 100) + '%';
+            }
         }
         
         // Create material based on type and properties
@@ -949,128 +1576,70 @@
             updateStatus(`Material changed to: ${type}`, false);
         }
         
-        // Load default model from GitHub
-        function loadDefaultModel() {
-            updateStatus("Loading default model from GitHub...", false);
-            showLoading(true);
-            
-            // Remove previous model
-            if (currentModel) {
-                scene.remove(currentModel);
-            }
-            
-            loadSTLFromURL(DEFAULT_MODEL_URL)
-                .then(model => {
-                    // Create a container group for the model
-                    const container = new THREE.Group();
-                    container.add(model);
-                    
-                    // Calculate the bounding box of the model
-                    const box = new THREE.Box3().setFromObject(model);
-                    const center = box.getCenter(new THREE.Vector3());
-                    const size = box.getSize(new THREE.Vector3());
-                    
-                    // Center the model within the container
-                    model.position.x = -center.x;
-                    model.position.y = -center.y;
-                    model.position.z = -center.z;
-                    
-                    // Add the container to the scene
-                    currentModel = container;
-                    scene.add(currentModel);
-                    
-                    // Store materials for color control
-                    storeOriginalMaterials(currentModel);
-                    
-                    // Adjust camera to fit model
-                    const maxDim = Math.max(size.x, size.y, size.z);
-                    const fov = camera.fov * (Math.PI / 180);
-                    let cameraZ = Math.abs(maxDim / (2 * Math.tan(fov / 2)));
-                    
-                    // Set camera position
-                    camera.position.set(0, 0, cameraZ * 1.5);
-                    controls.target.set(0, 0, 0);
-                    controls.update();
-                    
-                    showLoading(false);
-                    updateStatus("Default model loaded successfully from GitHub", false);
-                })
-                .catch(error => {
-                    console.error("Model load error:", error);
-                    showLoading(false);
-                    updateStatus(`Error loading default model: ${error.message}`, true);
-                });
-        }
+        // Annotation functions
         
-        // Load STL from URL
-        function loadSTLFromURL(url) {
-            return new Promise((resolve, reject) => {
-                const loader = new THREE.STLLoader();
-                
-                fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.arrayBuffer();
-                    })
-                    .then(data => {
-                        try {
-                            const geometry = loader.parse(data);
-                            
-                            // Create mesh with current material
-                            const material = createMaterial(currentMaterialType, document.getElementById('model-color').value, wireframeVisible);
-                            const mesh = new THREE.Mesh(geometry, material);
-                            
-                            resolve(mesh);
-                        } catch (error) {
-                            console.error("STL load error:", error);
-                            reject(new Error("Failed to load STL file from URL: " + error.message));
-                        }
-                    })
-                    .catch(error => {
-                        reject(new Error("Failed to fetch STL file: " + error.message));
-                    });
-            });
-        }
-
-        // Остальные функции (аннотации, скриншоты и т.д.)
+        // Initialize annotation canvas
         function initAnnotationCanvas() {
             annotationCanvas = document.getElementById('annotation-canvas');
             annotationCtx = annotationCanvas.getContext('2d');
             
+            // Set canvas size to match the image
             const img = document.getElementById('screenshot-image');
-            annotationCanvas.width = img.clientWidth;
-            annotationCanvas.height = img.clientHeight;
+            const originalWidth = img.naturalWidth;
+            const originalHeight = img.naturalHeight;
             
+            annotationCanvas.width = originalWidth * zoomLevel;
+            annotationCanvas.height = originalHeight * zoomLevel;
+            
+            // Clear previous annotations
             annotations = [];
             annotationCounter = 1;
             selectedAnnotation = null;
             updateAnnotationList();
             redrawAnnotations();
+            
+            // Reset zoom
+            resetZoom();
         }
         
+        // Add annotation at position
         function addAnnotation(x, y) {
+            // Корректируем координаты с учетом реального размера canvas
+            const rect = annotationCanvas.getBoundingClientRect();
+            const scaleX = annotationCanvas.width / rect.width;
+            const scaleY = annotationCanvas.height / rect.height;
+            
+            const adjustedX = x * scaleX;
+            const adjustedY = y * scaleY;
+            
             const annotation = {
                 id: annotationCounter++,
-                x: x,
-                y: y,
-                radius: defaultAnnotationRadius,
+                x: adjustedX,
+                y: adjustedY,
+                radius: defaultAnnotationRadius * zoomLevel, // Учитываем зум для радиуса
                 comment: null
             };
             
             annotations.push(annotation);
             updateAnnotationList();
             redrawAnnotations();
+            
+            // Select the new annotation
+            selectAnnotation(annotation);
         }
         
+        // Redraw all annotations on canvas
         function redrawAnnotations() {
+            // Clear canvas
             annotationCtx.clearRect(0, 0, annotationCanvas.width, annotationCanvas.height);
             
+            // Draw all annotations
             annotations.forEach(annotation => {
+                // Draw circle
                 annotationCtx.beginPath();
                 annotationCtx.arc(annotation.x, annotation.y, annotation.radius, 0, 2 * Math.PI);
                 
+                // Use different color for selected annotation
                 if (annotation === selectedAnnotation) {
                     annotationCtx.strokeStyle = '#4cc9f0';
                     annotationCtx.lineWidth = 4;
@@ -1081,23 +1650,27 @@
                 
                 annotationCtx.stroke();
                 
+                // Draw number
                 annotationCtx.fillStyle = annotation === selectedAnnotation ? '#4cc9f0' : '#ff0000';
                 annotationCtx.font = 'bold ' + (annotation.radius * 0.8) + 'px Arial';
                 annotationCtx.textAlign = 'center';
                 annotationCtx.textBaseline = 'middle';
                 annotationCtx.fillText(annotation.id.toString(), annotation.x, annotation.y);
                 
+                // Draw comment if exists
                 if (annotation.comment) {
                     const commentText = annotation.comment.type === 'custom' 
                         ? annotation.comment.text 
                         : commentOptions[annotation.comment.type];
                     
                     if (commentText) {
+                        // Draw comment text below the marker
                         annotationCtx.fillStyle = '#4cc9f0';
                         annotationCtx.font = '12px Arial';
                         annotationCtx.textAlign = 'center';
                         annotationCtx.textBaseline = 'top';
                         
+                        // Draw background for better readability
                         const textMetrics = annotationCtx.measureText(commentText);
                         const textWidth = textMetrics.width;
                         const textHeight = 16;
@@ -1111,6 +1684,7 @@
                             textHeight + padding
                         );
                         
+                        // Draw text
                         annotationCtx.fillStyle = '#ffffff';
                         annotationCtx.fillText(
                             commentText,
@@ -1122,12 +1696,21 @@
             });
         }
         
+        // Get annotation at position
         function getAnnotationAt(x, y) {
+            // Корректируем координаты с учетом реального размера canvas
+            const rect = annotationCanvas.getBoundingClientRect();
+            const scaleX = annotationCanvas.width / rect.width;
+            const scaleY = annotationCanvas.height / rect.height;
+            
+            const adjustedX = x * scaleX;
+            const adjustedY = y * scaleY;
+            
             for (let i = annotations.length - 1; i >= 0; i--) {
                 const annotation = annotations[i];
                 const distance = Math.sqrt(
-                    Math.pow(x - annotation.x, 2) + 
-                    Math.pow(y - annotation.y, 2)
+                    Math.pow(adjustedX - annotation.x, 2) + 
+                    Math.pow(adjustedY - annotation.y, 2)
                 );
                 
                 if (distance <= annotation.radius) {
@@ -1137,29 +1720,34 @@
             return null;
         }
         
+        // Update default annotation radius
         function updateDefaultAnnotationRadius() {
             defaultAnnotationRadius = parseInt(document.getElementById('default-annotation-radius').value);
             document.getElementById('default-radius-value').textContent = defaultAnnotationRadius + 'px';
         }
         
+        // Update selected annotation radius
         function updateSelectedAnnotationRadius() {
             if (selectedAnnotation) {
-                selectedAnnotation.radius = parseInt(document.getElementById('selected-annotation-radius').value);
-                document.getElementById('selected-radius-value').textContent = selectedAnnotation.radius + 'px';
+                selectedAnnotation.radius = parseInt(document.getElementById('selected-annotation-radius').value) * zoomLevel;
+                document.getElementById('selected-radius-value').textContent = Math.round(selectedAnnotation.radius / zoomLevel) + 'px';
                 redrawAnnotations();
                 updateAnnotationList();
             }
         }
         
+        // Select annotation
         function selectAnnotation(annotation) {
             selectedAnnotation = annotation;
             
             if (annotation) {
+                // Show selected annotation controls
                 document.getElementById('selected-annotation-controls').style.display = 'block';
-                document.getElementById('selected-annotation-radius').value = annotation.radius;
-                document.getElementById('selected-radius-value').textContent = annotation.radius + 'px';
+                document.getElementById('selected-annotation-radius').value = Math.round(annotation.radius / zoomLevel);
+                document.getElementById('selected-radius-value').textContent = Math.round(annotation.radius / zoomLevel) + 'px';
                 document.getElementById('selected-annotation-number').textContent = annotation.id;
                 
+                // Show comment controls and set values
                 document.getElementById('comment-controls').style.display = 'block';
                 
                 if (annotation.comment) {
@@ -1176,6 +1764,7 @@
                     document.getElementById('custom-comment-container').style.display = 'none';
                 }
             } else {
+                // Hide selected annotation controls
                 document.getElementById('selected-annotation-controls').style.display = 'none';
                 document.getElementById('comment-controls').style.display = 'none';
             }
@@ -1184,6 +1773,7 @@
             redrawAnnotations();
         }
         
+        // Update annotation list in the UI
         function updateAnnotationList() {
             const annotationList = document.getElementById('annotation-list');
             annotationList.innerHTML = '';
@@ -1192,12 +1782,13 @@
                 const item = document.createElement('div');
                 item.className = 'annotation-item' + (annotation === selectedAnnotation ? ' selected' : '');
                 
+                // Add comment indicator
                 const commentIndicator = annotation.comment ? '<span class="comment-indicator"></span>' : '';
                 
                 item.innerHTML = `
                     <span class="annotation-number">${annotation.id}</span>
                     Marker ${annotation.id}
-                    <span class="annotation-size">${annotation.radius}px</span>
+                    <span class="annotation-size">${Math.round(annotation.radius / zoomLevel)}px</span>
                     ${commentIndicator}
                 `;
                 
@@ -1209,6 +1800,7 @@
             });
         }
         
+        // Clear all annotations
         function clearAnnotations() {
             annotations = [];
             annotationCounter = 1;
@@ -1217,12 +1809,14 @@
             redrawAnnotations();
         }
         
+        // Delete selected annotation
         function deleteSelectedAnnotation() {
             if (selectedAnnotation) {
                 const index = annotations.indexOf(selectedAnnotation);
                 if (index !== -1) {
                     annotations.splice(index, 1);
                     
+                    // If we deleted the last annotation, reset counter
                     if (annotations.length === 0) {
                         annotationCounter = 1;
                     }
@@ -1234,12 +1828,14 @@
             }
         }
         
+        // Save comment for selected annotation
         function saveComment() {
             if (!selectedAnnotation) return;
             
             const commentType = document.getElementById('comment-type').value;
             
             if (commentType === '') {
+                // Remove comment
                 selectedAnnotation.comment = null;
             } else if (commentType === 'custom') {
                 const customComment = document.getElementById('custom-comment').value.trim();
@@ -1252,6 +1848,7 @@
                     selectedAnnotation.comment = null;
                 }
             } else {
+                // Use predefined comment
                 selectedAnnotation.comment = {
                     type: commentType,
                     text: commentOptions[commentType]
@@ -1263,22 +1860,27 @@
             updateStatus("Comment saved", false);
         }
         
+        // Take screenshot function
         function takeScreenshot() {
             if (!currentModel) {
                 updateStatus("No model loaded to take screenshot", true);
                 return;
             }
             
+            // Render the scene to ensure we have the latest frame
             renderer.render(scene, camera);
             
+            // Get the canvas data URL
             const dataURL = renderer.domElement.toDataURL('image/png');
             currentScreenshotUrl = dataURL;
             
+            // Show preview
             const preview = document.getElementById('screenshot-preview');
             const screenshotImage = document.getElementById('screenshot-image');
             screenshotImage.src = dataURL;
             preview.style.display = 'flex';
             
+            // Initialize annotation canvas after image loads
             screenshotImage.onload = function() {
                 initAnnotationCanvas();
             };
@@ -1286,72 +1888,81 @@
             updateStatus("Screenshot captured - preview shown", false);
         }
         
+        // Download screenshot with annotations function
         function downloadAnnotatedScreenshot() {
             if (!currentScreenshotUrl) return;
             
+            // Create a temporary canvas to combine image and annotations
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
             
+            // Set canvas size to match the original screenshot
             tempCanvas.width = screenshotImg.naturalWidth;
             tempCanvas.height = screenshotImg.naturalHeight;
             
+            // Draw the original screenshot
             tempCtx.drawImage(screenshotImg, 0, 0, tempCanvas.width, tempCanvas.height);
             
-            const scaleX = tempCanvas.width / annotationCanvas.width;
-            const scaleY = tempCanvas.height / annotationCanvas.height;
-            
+            // Draw all annotations (в оригинальном масштабе)
             annotations.forEach(annotation => {
-                const scaledX = annotation.x * scaleX;
-                const scaledY = annotation.y * scaleY;
-                const scaledRadius = annotation.radius * Math.min(scaleX, scaleY);
+                // Конвертируем координаты обратно в оригинальный масштаб
+                const originalX = annotation.x / zoomLevel;
+                const originalY = annotation.y / zoomLevel;
+                const originalRadius = annotation.radius / zoomLevel;
                 
+                // Draw circle
                 tempCtx.beginPath();
-                tempCtx.arc(scaledX, scaledY, scaledRadius, 0, 2 * Math.PI);
+                tempCtx.arc(originalX, originalY, originalRadius, 0, 2 * Math.PI);
                 tempCtx.strokeStyle = '#ff0000';
-                tempCtx.lineWidth = 3 * Math.min(scaleX, scaleY);
+                tempCtx.lineWidth = 3;
                 tempCtx.stroke();
                 
+                // Draw number
                 tempCtx.fillStyle = '#ff0000';
-                tempCtx.font = 'bold ' + (scaledRadius * 0.8) + 'px Arial';
+                tempCtx.font = 'bold ' + (originalRadius * 0.8) + 'px Arial';
                 tempCtx.textAlign = 'center';
                 tempCtx.textBaseline = 'middle';
-                tempCtx.fillText(annotation.id.toString(), scaledX, scaledY);
+                tempCtx.fillText(annotation.id.toString(), originalX, originalY);
                 
+                // Draw comment if exists
                 if (annotation.comment) {
                     const commentText = annotation.comment.type === 'custom' 
                         ? annotation.comment.text 
                         : commentOptions[annotation.comment.type];
                     
                     if (commentText) {
-                        const fontSize = 12 * Math.min(scaleX, scaleY);
+                        // Draw comment text below the marker
                         tempCtx.fillStyle = '#4cc9f0';
-                        tempCtx.font = `bold ${fontSize}px Arial`;
+                        tempCtx.font = '12px Arial';
                         tempCtx.textAlign = 'center';
                         tempCtx.textBaseline = 'top';
                         
+                        // Draw background for better readability
                         const textMetrics = tempCtx.measureText(commentText);
                         const textWidth = textMetrics.width;
-                        const textHeight = fontSize;
-                        const padding = 4 * Math.min(scaleX, scaleY);
+                        const textHeight = 16;
+                        const padding = 4;
                         
                         tempCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                         tempCtx.fillRect(
-                            scaledX - textWidth/2 - padding,
-                            scaledY + scaledRadius + 5 * Math.min(scaleX, scaleY),
+                            originalX - textWidth/2 - padding,
+                            originalY + originalRadius + 5,
                             textWidth + padding*2,
                             textHeight + padding
                         );
                         
+                        // Draw text
                         tempCtx.fillStyle = '#ffffff';
                         tempCtx.fillText(
                             commentText,
-                            scaledX,
-                            scaledY + scaledRadius + 5 * Math.min(scaleX, scaleY) + padding/2
+                            originalX,
+                            originalY + originalRadius + 5 + padding
                         );
                     }
                 }
             });
             
+            // Create download link
             const dataURL = tempCanvas.toDataURL('image/png');
             const link = document.createElement('a');
             link.download = `3d-model-screenshot-annotated-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.png`;
@@ -1361,11 +1972,12 @@
             updateStatus("Annotated screenshot downloaded", false);
         }
         
+        // Close preview function
         function closePreview() {
             document.getElementById('screenshot-preview').style.display = 'none';
         }
-
-        // File upload functionality (для загрузки пользовательских моделей)
+        
+        // Load STL model from file
         function loadSTLModel(file) {
             return new Promise((resolve, reject) => {
                 const loader = new THREE.STLLoader();
@@ -1374,8 +1986,11 @@
                 reader.onload = function(event) {
                     try {
                         const geometry = loader.parse(event.target.result);
+                        
+                        // Create mesh with current material
                         const material = createMaterial(currentMaterialType, document.getElementById('model-color').value, wireframeVisible);
                         const mesh = new THREE.Mesh(geometry, material);
+                        
                         resolve(mesh);
                     } catch (error) {
                         console.error("STL load error:", error);
@@ -1391,6 +2006,7 @@
             });
         }
         
+        // Load GLB/GLTF model from file
         function loadGLTFModel(file) {
             return new Promise((resolve, reject) => {
                 const loader = new THREE.GLTFLoader();
@@ -1402,6 +2018,7 @@
                         URL.revokeObjectURL(url);
                         const model = gltf.scene;
                         
+                        // Apply our material to the model
                         model.traverse((child) => {
                             if (child.isMesh) {
                                 const newMaterial = createMaterial(currentMaterialType, child.material?.color, wireframeVisible);
@@ -1424,6 +2041,7 @@
             });
         }
         
+        // Load OBJ model from file
         function loadOBJModel(file) {
             return new Promise((resolve, reject) => {
                 const loader = new THREE.OBJLoader();
@@ -1433,6 +2051,7 @@
                     try {
                         const model = loader.parse(event.target.result);
                         
+                        // Apply material to all meshes in the model
                         model.traverse((child) => {
                             if (child.isMesh) {
                                 const material = createMaterial(currentMaterialType, document.getElementById('model-color').value, wireframeVisible);
@@ -1455,10 +2074,12 @@
             });
         }
         
+        // Main model loading function from file
         function loadModel(file) {
             updateStatus("Loading 3D model...", false);
             showLoading(true);
             
+            // Remove previous model
             if (currentModel) {
                 scene.remove(currentModel);
             }
@@ -1466,6 +2087,7 @@
             const fileExtension = file.name.toLowerCase().split('.').pop();
             let loadPromise;
             
+            // Determine which loader to use based on file extension
             if (fileExtension === 'stl') {
                 loadPromise = loadSTLModel(file);
             } else if (fileExtension === 'glb' || fileExtension === 'gltf') {
@@ -1480,26 +2102,36 @@
             
             loadPromise
                 .then(model => {
+                    // Create a container group for the model
                     const container = new THREE.Group();
                     container.add(model);
                     
+                    // Calculate the bounding box of the model
                     const box = new THREE.Box3().setFromObject(model);
                     const center = box.getCenter(new THREE.Vector3());
                     const size = box.getSize(new THREE.Vector3());
                     
+                    // Center the model within the container
                     model.position.x = -center.x;
                     model.position.y = -center.y;
                     model.position.z = -center.z;
                     
+                    // Add the container to the scene
                     currentModel = container;
                     scene.add(currentModel);
                     
+                    // Store the file for sharing
+                    currentModelFile = file;
+                    
+                    // Store materials for color control
                     storeOriginalMaterials(currentModel);
                     
+                    // Adjust camera to fit model
                     const maxDim = Math.max(size.x, size.y, size.z);
                     const fov = camera.fov * (Math.PI / 180);
                     let cameraZ = Math.abs(maxDim / (2 * Math.tan(fov / 2)));
                     
+                    // Set camera position
                     camera.position.set(0, 0, cameraZ * 1.5);
                     controls.target.set(0, 0, 0);
                     controls.update();
@@ -1514,7 +2146,7 @@
                 });
         }
         
-        // Event listeners
+        // Event listeners for UI controls
         document.getElementById('file-input').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
@@ -1522,18 +2154,26 @@
                 const supportedFormats = ['stl', 'glb', 'gltf', 'obj'];
                 
                 if (supportedFormats.includes(fileExtension)) {
-                    loadModel(file);
+                    if (checkFileSize(file)) {
+                        loadModel(file);
+                    }
                 } else {
                     updateStatus("Please select a STL, GLB, or OBJ file", true);
                 }
             }
         });
         
-        // Reload default model button
-        document.getElementById('reload-model').addEventListener('click', function() {
-            loadDefaultModel();
-        });
-
+        // NEW: Generate link button
+        document.getElementById('generate-link').addEventListener('click', generateTemporaryLink);
+        
+        // NEW: Copy link button
+        document.getElementById('copy-link').addEventListener('click', copyLinkToClipboard);
+        
+        // NEW: Zoom controls
+        document.getElementById('zoom-in').addEventListener('click', zoomIn);
+        document.getElementById('zoom-out').addEventListener('click', zoomOut);
+        document.getElementById('zoom-reset').addEventListener('click', resetZoom);
+        
         // Material type buttons
         document.querySelectorAll('.material-btn').forEach(button => {
             button.addEventListener('click', function() {
@@ -1571,9 +2211,10 @@
         document.getElementById('comment-type').addEventListener('change', function() {
             if (this.value === 'custom') {
                 document.getElementById('custom-comment-container').style.display = 'block';
+                // Auto-save when selecting a predefined comment
+                saveComment();
             } else {
                 document.getElementById('custom-comment-container').style.display = 'none';
-                saveComment();
             }
         });
         
@@ -1586,16 +2227,19 @@
             const annotation = getAnnotationAt(x, y);
             
             if (annotation) {
+                // Start dragging existing annotation or select it
                 if (event.ctrlKey || event.metaKey) {
+                    // If Ctrl/Cmd is pressed, just select without dragging
                     selectAnnotation(annotation);
                 } else {
+                    // Start dragging
                     isDraggingAnnotation = true;
                     draggedAnnotation = annotation;
                     selectAnnotation(annotation);
                 }
             } else {
+                // Add new annotation
                 addAnnotation(x, y);
-                selectAnnotation(annotations[annotations.length - 1]);
             }
         });
         
@@ -1605,8 +2249,13 @@
                 const x = event.clientX - rect.left;
                 const y = event.clientY - rect.top;
                 
-                draggedAnnotation.x = x;
-                draggedAnnotation.y = y;
+                // Корректируем координаты с учетом реального размера canvas
+                const scaleX = annotationCanvas.width / rect.width;
+                const scaleY = annotationCanvas.height / rect.height;
+                
+                draggedAnnotation.x = x * scaleX;
+                draggedAnnotation.y = y * scaleY;
+                
                 redrawAnnotations();
             }
         });
@@ -1621,6 +2270,7 @@
             draggedAnnotation = null;
         });
         
+        // Click on canvas background to deselect
         document.getElementById('annotation-canvas').addEventListener('click', function(event) {
             const rect = annotationCanvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
@@ -1628,11 +2278,13 @@
             
             const annotation = getAnnotationAt(x, y);
             
+            // If clicked on empty space and not dragging, deselect
             if (!annotation && !isDraggingAnnotation) {
                 selectAnnotation(null);
             }
         });
         
+        // Store the original screenshot image for download
         document.getElementById('screenshot-image').addEventListener('load', function() {
             screenshotImg = this;
         });
@@ -1667,6 +2319,7 @@
         });
         
         document.getElementById('bg-gradient').addEventListener('click', function() {
+            // Create gradient background
             const canvas = document.createElement('canvas');
             canvas.width = 256;
             canvas.height = 256;
@@ -1685,25 +2338,30 @@
             updateStatus("Gradient background enabled", false);
         });
         
+        // Color picker event
         document.getElementById('model-color').addEventListener('input', function() {
             updateModelColor();
         });
         
+        // Wireframe toggle event
         document.getElementById('toggle-wireframe').addEventListener('click', function() {
             toggleWireframe();
             updateStatus("Wireframe " + (wireframeVisible ? "enabled" : "disabled"), false);
         });
         
+        // Auto rotation toggle event
         document.getElementById('toggle-rotation').addEventListener('click', function() {
             toggleRotation();
             updateStatus("Auto rotation " + (autoRotation ? "enabled" : "disabled"), false);
         });
         
+        // Rotation direction toggle event
         document.getElementById('rotation-direction').addEventListener('click', function() {
             toggleRotationDirection();
             updateStatus("Rotation direction: " + (rotationDirection > 0 ? "clockwise" : "counter-clockwise"), false);
         });
         
+        // Rotation speed event
         document.getElementById('rotation-speed').addEventListener('input', function() {
             updateRotationSpeed();
         });
@@ -1712,6 +2370,7 @@
         function animate() {
             requestAnimationFrame(animate);
             
+            // Вращаем контейнер модели если включена автоповорот
             if (autoRotation && currentModel) {
                 currentModel.rotation.y += rotationSpeed * 0.01 * rotationDirection;
             }
@@ -1720,9 +2379,27 @@
             renderer.render(scene, camera);
         }
         
-        // Initialize and start - загружаем модель сразу при запуске
-        loadDefaultModel();
+        // Start the animation
         animate();
+        
+        // NEW: Initialize database and load model from URL parameter
+        async function initializeApp() {
+            try {
+                await initDatabase();
+                cleanupExpiredModels();
+                await loadModelFromUrlParam();
+                
+                if (!currentModel) {
+                    updateStatus("Ready to load 3D model. Please select a file to begin.", false);
+                }
+            } catch (error) {
+                console.error("Initialization error:", error);
+                updateStatus("Ready to load 3D model. Please select a file to begin.", false);
+            }
+        }
+        
+        // Initialize the application
+        initializeApp();
     </script>
 </body>
 </html>
