@@ -788,7 +788,8 @@
         // Ссылка на единственную модель
         const DEFAULT_MODEL_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/${GITHUB_BRANCH}/models/default.stl`;
 
-        // Основные переменные Three.js (остаются без изменений)
+        // Основные переменные Three.js
+        let scene, camera, renderer, controls;
         let currentModel = null;
         let gridVisible = true;
         let axesVisible = true;
@@ -801,7 +802,7 @@
         let gridHelper, axesHelper;
         let currentScreenshotUrl = null;
         
-        // НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ АННОТАЦИЙ (как во втором варианте)
+        // ПЕРЕМЕННЫЕ ДЛЯ АННОТАЦИЙ
         let annotations = [];
         let currentMarkerId = 1;
         let selectedMarker = null;
@@ -817,75 +818,336 @@
         const MIN_ZOOM = 0.5;
         const MAX_ZOOM = 3.0;
 
-        // Initialize scene, camera, and renderer (без изменений)
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x2c3e50);
-        
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(5, 5, 10);
-        
-        const renderer = new THREE.WebGLRenderer({ 
-            canvas: document.getElementById('canvas'), 
-            antialias: true,
-            preserveDrawingBuffer: true
-        });
-        
-        const container = document.getElementById('canvas-container');
-        renderer.setSize(container.offsetWidth, container.offsetHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        
-        // Add lighting (без изменений)
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(ambientLight);
-        
-        const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.6);
-        directionalLight1.position.set(10, 10, 10);
-        scene.add(directionalLight1);
-        
-        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
-        directionalLight2.position.set(-10, -10, -10);
-        scene.add(directionalLight2);
-        
-        const directionalLight3 = new THREE.DirectionalLight(0xffffff, 0.3);
-        directionalLight3.position.set(0, 10, -10);
-        scene.add(directionalLight3);
-        
-        // Add grid helper (без изменений)
-        gridHelper = new THREE.GridHelper(20, 20, 0x888888, 0x444444);
-        scene.add(gridHelper);
-        
-        // Add axes helper (без изменений)
-        axesHelper = new THREE.AxesHelper(10);
-        scene.add(axesHelper);
-        
-        // Set up orbit controls (без изменений)
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        
-        // Handle window resize (без изменений)
-        window.addEventListener('resize', function() {
+        // Инициализация сцены Three.js
+        function initThreeJS() {
+            // Создание сцены
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x2c3e50);
+
+            // Настройка камеры
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(5, 5, 10);
+
+            // Создание рендерера
+            const canvas = document.getElementById('canvas');
+            renderer = new THREE.WebGLRenderer({ 
+                canvas: canvas, 
+                antialias: true,
+                preserveDrawingBuffer: true
+            });
+
+            updateRendererSize();
+
+            // Освещение
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.6);
+            directionalLight1.position.set(10, 10, 10);
+            scene.add(directionalLight1);
+
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+            directionalLight2.position.set(-10, -10, -10);
+            scene.add(directionalLight2);
+
+            // Сетка и оси
+            gridHelper = new THREE.GridHelper(20, 20, 0x888888, 0x444444);
+            scene.add(gridHelper);
+
+            axesHelper = new THREE.AxesHelper(10);
+            scene.add(axesHelper);
+
+            // OrbitControls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+        }
+
+        // Обновление размера рендерера
+        function updateRendererSize() {
             const container = document.getElementById('canvas-container');
-            camera.aspect = container.offsetWidth / container.offsetHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.offsetWidth, container.offsetHeight);
-        });
-        
-        // Все оригинальные функции Three.js остаются без изменений:
-        // updateStatus, showLoading, createMaterial, applyMaterialToModel, 
-        // storeOriginalMaterials, updateModelColor, toggleWireframe, 
-        // toggleRotation, toggleRotationDirection, updateRotationSpeed,
-        // updateMaterialProperties, changeMaterialType, loadDefaultModel,
-        // loadSTLFromURL, loadSTLModel, loadGLTFModel, loadOBJModel, loadModel
-        
-        // НОВЫЕ ФУНКЦИИ ДЛЯ АННОТАЦИЙ (как во втором варианте):
+            if (container && camera) {
+                camera.aspect = container.offsetWidth / container.offsetHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.offsetWidth, container.offsetHeight);
+            }
+        }
+
+        // Обновление статуса
+        function updateStatus(message, isError = false) {
+            const statusElement = document.getElementById('status');
+            if (statusElement) {
+                statusElement.textContent = message;
+                statusElement.style.color = isError ? '#ff4444' : '#ffffff';
+            }
+        }
+
+        // Показать/скрыть загрузку
+        function showLoading(show) {
+            const loadingElement = document.getElementById('loading');
+            if (loadingElement) {
+                loadingElement.style.display = show ? 'block' : 'none';
+            }
+        }
+
+        // Создание материала
+        function createMaterial(type, color, wireframe) {
+            const colorValue = color || '#ff6b6b';
+            
+            switch(type) {
+                case 'basic':
+                    return new THREE.MeshBasicMaterial({ 
+                        color: colorValue,
+                        wireframe: wireframe
+                    });
+                case 'standard':
+                    const metalness = parseFloat(document.getElementById('metalness')?.value || 0);
+                    const roughness = parseFloat(document.getElementById('roughness')?.value || 0.5);
+                    return new THREE.MeshStandardMaterial({ 
+                        color: colorValue,
+                        metalness: metalness,
+                        roughness: roughness,
+                        wireframe: wireframe
+                    });
+                case 'phong':
+                    const shininess = parseFloat(document.getElementById('shininess')?.value || 30);
+                    return new THREE.MeshPhongMaterial({ 
+                        color: colorValue,
+                        specular: 0x111111,
+                        shininess: shininess,
+                        wireframe: wireframe
+                    });
+                case 'lambert':
+                    return new THREE.MeshLambertMaterial({ 
+                        color: colorValue,
+                        wireframe: wireframe
+                    });
+                case 'toon':
+                    return new THREE.MeshToonMaterial({ 
+                        color: colorValue,
+                        wireframe: wireframe
+                    });
+                case 'normal':
+                    return new THREE.MeshNormalMaterial({ 
+                        wireframe: wireframe
+                    });
+                default:
+                    return new THREE.MeshPhongMaterial({ 
+                        color: colorValue,
+                        wireframe: wireframe
+                    });
+            }
+        }
+
+        // Применение материала к модели
+        function applyMaterialToModel() {
+            if (!currentModel) return;
+            
+            currentModel.traverse((child) => {
+                if (child.isMesh) {
+                    const newMaterial = createMaterial(currentMaterialType, child.material.color, wireframeVisible);
+                    child.material = newMaterial;
+                }
+            });
+            
+            storeOriginalMaterials(currentModel);
+        }
+
+        // Сохранение оригинальных материалов
+        function storeOriginalMaterials(model) {
+            currentMaterials = [];
+            model.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    currentMaterials.push({
+                        mesh: child,
+                        originalMaterial: child.material
+                    });
+                }
+            });
+        }
+
+        // Обновление цвета модели
+        function updateModelColor() {
+            const colorValue = document.getElementById('model-color')?.value || '#ff6b6b';
+            
+            currentMaterials.forEach(item => {
+                if (item.mesh && item.mesh.material) {
+                    item.mesh.material.color.set(colorValue);
+                }
+            });
+        }
+
+        // Переключение каркасного режима
+        function toggleWireframe() {
+            wireframeVisible = !wireframeVisible;
+            
+            currentMaterials.forEach(item => {
+                if (item.mesh && item.mesh.material) {
+                    item.mesh.material.wireframe = wireframeVisible;
+                }
+            });
+            
+            const button = document.getElementById('toggle-wireframe');
+            if (button) {
+                button.textContent = "Wireframe: " + (wireframeVisible ? "On" : "Off");
+            }
+        }
+
+        // Переключение автовращения
+        function toggleRotation() {
+            autoRotation = !autoRotation;
+            const button = document.getElementById('toggle-rotation');
+            if (button) {
+                button.textContent = "Auto Rotation: " + (autoRotation ? "On" : "Off");
+            }
+        }
+
+        // Переключение направления вращения
+        function toggleRotationDirection() {
+            rotationDirection = -rotationDirection;
+            const button = document.getElementById('rotation-direction');
+            if (button) {
+                button.textContent = "Rotation: " + (rotationDirection > 0 ? "CW" : "CCW");
+            }
+        }
+
+        // Обновление скорости вращения
+        function updateRotationSpeed() {
+            rotationSpeed = parseFloat(document.getElementById('rotation-speed')?.value || 0.5);
+        }
+
+        // Обновление свойств материала
+        function updateMaterialProperties() {
+            if (!currentModel) return;
+            
+            currentModel.traverse((child) => {
+                if (child.isMesh) {
+                    if (child.material instanceof THREE.MeshStandardMaterial) {
+                        child.material.metalness = parseFloat(document.getElementById('metalness')?.value || 0);
+                        child.material.roughness = parseFloat(document.getElementById('roughness')?.value || 0.5);
+                    } else if (child.material instanceof THREE.MeshPhongMaterial) {
+                        child.material.shininess = parseFloat(document.getElementById('shininess')?.value || 30);
+                    }
+                }
+            });
+        }
+
+        // Изменение типа материала
+        function changeMaterialType(type) {
+            currentMaterialType = type;
+            applyMaterialToModel();
+            
+            // Показать/скрыть свойства материала
+            const materialProps = document.getElementById('material-props');
+            if (materialProps) {
+                if (type === 'standard' || type === 'phong') {
+                    materialProps.style.display = 'block';
+                } else {
+                    materialProps.style.display = 'none';
+                }
+            }
+            
+            updateStatus(`Material changed to: ${type}`, false);
+        }
+
+        // Загрузка модели по умолчанию с GitHub
+        function loadDefaultModel() {
+            updateStatus("Loading default model from GitHub...", false);
+            showLoading(true);
+            
+            // Удаление предыдущей модели
+            if (currentModel) {
+                scene.remove(currentModel);
+                currentModel = null;
+            }
+            
+            loadSTLFromURL(DEFAULT_MODEL_URL)
+                .then(model => {
+                    // Создание контейнера для модели
+                    const container = new THREE.Group();
+                    container.add(model);
+                    
+                    // Расчет bounding box модели
+                    const box = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    
+                    // Центрирование модели в контейнере
+                    model.position.x = -center.x;
+                    model.position.y = -center.y;
+                    model.position.z = -center.z;
+                    
+                    // Добавление контейнера в сцену
+                    currentModel = container;
+                    scene.add(currentModel);
+                    
+                    // Сохранение материалов для управления цветом
+                    storeOriginalMaterials(currentModel);
+                    
+                    // Настройка камеры под модель
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const fov = camera.fov * (Math.PI / 180);
+                    let cameraZ = Math.abs(maxDim / (2 * Math.tan(fov / 2)));
+                    
+                    // Установка позиции камеры
+                    camera.position.set(0, 0, cameraZ * 1.5);
+                    controls.target.set(0, 0, 0);
+                    controls.update();
+                    
+                    showLoading(false);
+                    updateStatus("Default model loaded successfully from GitHub", false);
+                })
+                .catch(error => {
+                    console.error("Model load error:", error);
+                    showLoading(false);
+                    updateStatus(`Error loading default model: ${error.message}`, true);
+                });
+        }
+
+        // Загрузка STL из URL
+        function loadSTLFromURL(url) {
+            return new Promise((resolve, reject) => {
+                const loader = new THREE.STLLoader();
+                
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.arrayBuffer();
+                    })
+                    .then(data => {
+                        try {
+                            const geometry = loader.parse(data);
+                            
+                            // Создание меша с текущим материалом
+                            const material = createMaterial(currentMaterialType, null, wireframeVisible);
+                            const mesh = new THREE.Mesh(geometry, material);
+                            
+                            resolve(mesh);
+                        } catch (error) {
+                            console.error("STL load error:", error);
+                            reject(new Error("Failed to load STL file from URL: " + error.message));
+                        }
+                    })
+                    .catch(error => {
+                        reject(new Error("Failed to fetch STL file: " + error.message));
+                    });
+            });
+        }
+
+        // ФУНКЦИИ ДЛЯ АННОТАЦИЙ:
 
         // Инициализация canvas для аннотаций
         function initAnnotationCanvas() {
             annotationCanvas = document.getElementById('annotation-layer');
+            if (!annotationCanvas) return;
+            
             annotationCtx = annotationCanvas.getContext('2d');
             
             const img = document.getElementById('screenshot-image');
+            if (!img) return;
+            
             annotationCanvas.width = img.naturalWidth;
             annotationCanvas.height = img.naturalHeight;
             
@@ -902,6 +1164,8 @@
 
         // Добавление аннотации
         function addAnnotation(x, y) {
+            if (!annotationCanvas) return;
+            
             const rect = annotationCanvas.getBoundingClientRect();
             const scaleX = annotationCanvas.width / rect.width;
             const scaleY = annotationCanvas.height / rect.height;
@@ -926,6 +1190,8 @@
 
         // Перерисовка всех аннотаций
         function redrawAnnotations() {
+            if (!annotationCtx || !annotationCanvas) return;
+            
             // Очистка canvas
             annotationCtx.clearRect(0, 0, annotationCanvas.width, annotationCanvas.height);
             
@@ -987,6 +1253,8 @@
 
         // Получение аннотации по координатам
         function getAnnotationAt(x, y) {
+            if (!annotationCanvas) return null;
+            
             const rect = annotationCanvas.getBoundingClientRect();
             const scaleX = annotationCanvas.width / rect.width;
             const scaleY = annotationCanvas.height / rect.height;
@@ -1010,19 +1278,20 @@
 
         // Обновление размера маркера по умолчанию
         function updateDefaultMarkerSize() {
-            defaultMarkerSize = parseInt(document.getElementById('marker-size').value);
-            document.getElementById('marker-size-value').textContent = defaultMarkerSize + 'px';
+            defaultMarkerSize = parseInt(document.getElementById('marker-size')?.value || 20);
+            const valueElement = document.getElementById('marker-size-value');
+            if (valueElement) {
+                valueElement.textContent = defaultMarkerSize + 'px';
+            }
         }
 
         // Выбор маркера
         function selectMarker(annotation) {
             selectedMarker = annotation;
             
-            if (annotation) {
-                // Обновление комментария
-                document.getElementById('marker-comment').value = annotation.comment || '';
-            } else {
-                document.getElementById('marker-comment').value = '';
+            const commentElement = document.getElementById('marker-comment');
+            if (commentElement) {
+                commentElement.value = annotation?.comment || '';
             }
             
             updateAnnotationsList();
@@ -1032,6 +1301,8 @@
         // Обновление списка аннотаций
         function updateAnnotationsList() {
             const annotationsList = document.getElementById('annotations-list');
+            if (!annotationsList) return;
+            
             annotationsList.innerHTML = '';
             
             annotations.forEach(annotation => {
@@ -1085,7 +1356,10 @@
         function saveComment() {
             if (!selectedMarker) return;
             
-            const comment = document.getElementById('marker-comment').value.trim();
+            const commentElement = document.getElementById('marker-comment');
+            if (!commentElement) return;
+            
+            const comment = commentElement.value.trim();
             selectedMarker.comment = comment || null;
             
             updateAnnotationsList();
@@ -1117,7 +1391,7 @@
             const img = document.getElementById('screenshot-image');
             const container = document.querySelector('.annotation-container');
             
-            if (img && container) {
+            if (img && container && annotationCanvas) {
                 const originalWidth = img.naturalWidth;
                 const originalHeight = img.naturalHeight;
                 
@@ -1136,11 +1410,14 @@
                 redrawAnnotations();
                 
                 // Обновление отображения уровня зума
-                document.getElementById('zoom-level').textContent = Math.round(zoomLevel * 100) + '%';
+                const zoomLevelElement = document.getElementById('zoom-level');
+                if (zoomLevelElement) {
+                    zoomLevelElement.textContent = Math.round(zoomLevel * 100) + '%';
+                }
             }
         }
 
-        // Создание скриншота (обновленная функция)
+        // Создание скриншота
         function takeScreenshot() {
             if (!currentModel) {
                 updateStatus("No model loaded to take screenshot", true);
@@ -1152,23 +1429,25 @@
             const dataURL = renderer.domElement.toDataURL('image/png');
             currentScreenshotUrl = dataURL;
             
-            // Показ модального окна вместо превью
+            // Показ модального окна
             const modal = document.getElementById('screenshot-modal');
             const screenshotImage = document.getElementById('screenshot-image');
-            screenshotImage.src = dataURL;
-            modal.style.display = 'flex';
-            
-            // Инициализация canvas для аннотаций после загрузки изображения
-            screenshotImage.onload = function() {
-                initAnnotationCanvas();
-            };
+            if (modal && screenshotImage) {
+                screenshotImage.src = dataURL;
+                modal.style.display = 'flex';
+                
+                // Инициализация canvas для аннотаций после загрузки изображения
+                screenshotImage.onload = function() {
+                    initAnnotationCanvas();
+                };
+            }
             
             updateStatus("Screenshot captured - annotation mode opened", false);
         }
 
-        // Скачивание аннотированного скриншота (обновленная функция)
+        // Скачивание аннотированного скриншота
         function downloadAnnotatedScreenshot() {
-            if (!currentScreenshotUrl) return;
+            if (!currentScreenshotUrl || !screenshotImg) return;
             
             // Создание временного canvas
             const tempCanvas = document.createElement('canvas');
@@ -1243,211 +1522,349 @@
             updateStatus("Annotated screenshot downloaded", false);
         }
 
-        // Закрытие превью (обновленная функция)
+        // Закрытие превью
         function closePreview() {
-            document.getElementById('screenshot-modal').style.display = 'none';
+            const modal = document.getElementById('screenshot-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
         }
 
-        // Все остальные оригинальные функции Three.js остаются здесь без изменений
-        // ... (ваш оригинальный код для работы с Three.js)
-
-        // Event listeners (обновленные для нового интерфейса)
-        document.getElementById('file-input').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const fileExtension = file.name.toLowerCase().split('.').pop();
-                const supportedFormats = ['stl', 'glb', 'obj'];
+        // Загрузка пользовательских моделей
+        function loadSTLModel(file) {
+            return new Promise((resolve, reject) => {
+                const loader = new THREE.STLLoader();
                 
-                if (supportedFormats.includes(fileExtension)) {
-                    loadModel(file);
-                } else {
-                    updateStatus("Please select a STL, GLB, or OBJ file", true);
-                }
-            }
-        });
-        
-        // Reload default model button
-        document.getElementById('reload-model').addEventListener('click', function() {
-            loadDefaultModel();
-        });
-
-        // Material type buttons
-        document.querySelectorAll('.material-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                changeMaterialType(this.dataset.material);
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const geometry = loader.parse(event.target.result);
+                        const material = createMaterial(currentMaterialType, null, wireframeVisible);
+                        const mesh = new THREE.Mesh(geometry, material);
+                        resolve(mesh);
+                    } catch (error) {
+                        reject(new Error("Failed to load STL file: " + error.message));
+                    }
+                };
+                
+                reader.onerror = function() {
+                    reject(new Error("Failed to read STL file"));
+                };
+                
+                reader.readAsArrayBuffer(file);
             });
-        });
+        }
         
-        // Material property sliders
-        document.getElementById('metalness').addEventListener('input', function() {
-            updateMaterialProperties();
-        });
+        function loadGLTFModel(file) {
+            return new Promise((resolve, reject) => {
+                const loader = new THREE.GLTFLoader();
+                const url = URL.createObjectURL(file);
+                
+                loader.load(
+                    url,
+                    function(gltf) {
+                        URL.revokeObjectURL(url);
+                        const model = gltf.scene;
+                        
+                        model.traverse((child) => {
+                            if (child.isMesh) {
+                                const newMaterial = createMaterial(currentMaterialType, child.material?.color, wireframeVisible);
+                                child.material = newMaterial;
+                            }
+                        });
+                        
+                        resolve(model);
+                    },
+                    function(xhr) {
+                        const percent = Math.round((xhr.loaded / xhr.total) * 100);
+                        const progressElement = document.getElementById('progress');
+                        if (progressElement) {
+                            progressElement.textContent = percent + '%';
+                        }
+                    },
+                    function(error) {
+                        URL.revokeObjectURL(url);
+                        reject(new Error("Failed to load GLB/GLTF file"));
+                    }
+                );
+            });
+        }
         
-        document.getElementById('roughness').addEventListener('input', function() {
-            updateMaterialProperties();
-        });
+        function loadOBJModel(file) {
+            return new Promise((resolve, reject) => {
+                const loader = new THREE.OBJLoader();
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const model = loader.parse(event.target.result);
+                        
+                        model.traverse((child) => {
+                            if (child.isMesh) {
+                                const material = createMaterial(currentMaterialType, null, wireframeVisible);
+                                child.material = material;
+                            }
+                        });
+                        
+                        resolve(model);
+                    } catch (error) {
+                        reject(new Error("Failed to load OBJ file"));
+                    }
+                };
+                
+                reader.onerror = function() {
+                    reject(new Error("Failed to read OBJ file"));
+                };
+                
+                reader.readAsText(file);
+            });
+        }
         
-        document.getElementById('shininess').addEventListener('input', function() {
-            updateMaterialProperties();
-        });
-        
-        // НОВЫЕ ОБРАБОТЧИКИ ДЛЯ АННОТАЦИЙ:
-        document.getElementById('take-screenshot').addEventListener('click', takeScreenshot);
-        document.getElementById('download-annotated').addEventListener('click', downloadAnnotatedScreenshot);
-        document.getElementById('close-preview').addEventListener('click', closePreview);
-        document.getElementById('close-modal').addEventListener('click', closePreview);
-
-        // Аннотации
-        document.getElementById('marker-size').addEventListener('input', updateDefaultMarkerSize);
-        document.getElementById('clear-markers').addEventListener('click', clearMarkers);
-        document.getElementById('delete-marker').addEventListener('click', deleteSelectedMarker);
-        document.getElementById('save-comment').addEventListener('click', saveComment);
-
-        // Зум
-        document.getElementById('zoom-in').addEventListener('click', zoomIn);
-        document.getElementById('zoom-out').addEventListener('click', zoomOut);
-        document.getElementById('zoom-reset').addEventListener('click', resetZoom);
-
-        // События canvas для аннотаций
-        document.getElementById('annotation-layer').addEventListener('mousedown', function(event) {
-            const rect = annotationCanvas.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
+        function loadModel(file) {
+            updateStatus("Loading 3D model...", false);
+            showLoading(true);
             
-            const annotation = getAnnotationAt(x, y);
-            
-            if (annotation) {
-                // Начало перетаскивания существующей аннотации
-                isDraggingMarker = true;
-                draggedMarker = annotation;
-                selectMarker(annotation);
-            } else {
-                // Добавление новой аннотации
-                addAnnotation(x, y);
+            if (currentModel) {
+                scene.remove(currentModel);
             }
-        });
+            
+            const fileExtension = file.name.toLowerCase().split('.').pop();
+            let loadPromise;
+            
+            if (fileExtension === 'stl') {
+                loadPromise = loadSTLModel(file);
+            } else if (fileExtension === 'glb' || fileExtension === 'gltf') {
+                loadPromise = loadGLTFModel(file);
+            } else if (fileExtension === 'obj') {
+                loadPromise = loadOBJModel(file);
+            } else {
+                updateStatus("Unsupported file format", true);
+                showLoading(false);
+                return;
+            }
+            
+            loadPromise
+                .then(model => {
+                    const container = new THREE.Group();
+                    container.add(model);
+                    
+                    const box = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    
+                    model.position.x = -center.x;
+                    model.position.y = -center.y;
+                    model.position.z = -center.z;
+                    
+                    currentModel = container;
+                    scene.add(currentModel);
+                    
+                    storeOriginalMaterials(currentModel);
+                    
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const fov = camera.fov * (Math.PI / 180);
+                    let cameraZ = Math.abs(maxDim / (2 * Math.tan(fov / 2)));
+                    
+                    camera.position.set(0, 0, cameraZ * 1.5);
+                    controls.target.set(0, 0, 0);
+                    controls.update();
+                    
+                    showLoading(false);
+                    updateStatus(`3D model loaded successfully: ${file.name}`, false);
+                })
+                .catch(error => {
+                    console.error("Model load error:", error);
+                    showLoading(false);
+                    updateStatus(`Error: ${error.message}`, true);
+                });
+        }
 
-        document.getElementById('annotation-layer').addEventListener('mousemove', function(event) {
-            if (isDraggingMarker && draggedMarker) {
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            // Загрузка файла
+            document.getElementById('file-input').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const fileExtension = file.name.toLowerCase().split('.').pop();
+                    const supportedFormats = ['stl', 'glb', 'obj'];
+                    
+                    if (supportedFormats.includes(fileExtension)) {
+                        loadModel(file);
+                    } else {
+                        updateStatus("Please select a STL, GLB, or OBJ file", true);
+                    }
+                }
+            });
+
+            // Кнопки типа материала
+            document.querySelectorAll('.material-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    changeMaterialType(this.dataset.material);
+                });
+            });
+
+            // Слайдеры свойств материала
+            document.getElementById('metalness')?.addEventListener('input', updateMaterialProperties);
+            document.getElementById('roughness')?.addEventListener('input', updateMaterialProperties);
+            document.getElementById('shininess')?.addEventListener('input', updateMaterialProperties);
+
+            // Скриншоты
+            document.getElementById('take-screenshot')?.addEventListener('click', takeScreenshot);
+            document.getElementById('download-annotated')?.addEventListener('click', downloadAnnotatedScreenshot);
+            document.getElementById('close-preview')?.addEventListener('click', closePreview);
+            document.getElementById('close-modal')?.addEventListener('click', closePreview);
+
+            // Аннотации
+            document.getElementById('marker-size')?.addEventListener('input', updateDefaultMarkerSize);
+            document.getElementById('clear-markers')?.addEventListener('click', clearMarkers);
+            document.getElementById('delete-marker')?.addEventListener('click', deleteSelectedMarker);
+            document.getElementById('save-comment')?.addEventListener('click', saveComment);
+
+            // Зум
+            document.getElementById('zoom-in')?.addEventListener('click', zoomIn);
+            document.getElementById('zoom-out')?.addEventListener('click', zoomOut);
+            document.getElementById('zoom-reset')?.addEventListener('click', resetZoom);
+
+            // События canvas для аннотаций
+            document.getElementById('annotation-layer')?.addEventListener('mousedown', function(event) {
                 const rect = annotationCanvas.getBoundingClientRect();
                 const x = event.clientX - rect.left;
                 const y = event.clientY - rect.top;
                 
-                const scaleX = annotationCanvas.width / rect.width;
-                const scaleY = annotationCanvas.height / rect.height;
+                const annotation = getAnnotationAt(x, y);
                 
-                draggedMarker.x = x * scaleX;
-                draggedMarker.y = y * scaleY;
+                if (annotation) {
+                    // Начало перетаскивания существующей аннотации
+                    isDraggingMarker = true;
+                    draggedMarker = annotation;
+                    selectMarker(annotation);
+                } else {
+                    // Добавление новой аннотации
+                    addAnnotation(x, y);
+                }
+            });
+
+            document.getElementById('annotation-layer')?.addEventListener('mousemove', function(event) {
+                if (isDraggingMarker && draggedMarker) {
+                    const rect = annotationCanvas.getBoundingClientRect();
+                    const x = event.clientX - rect.left;
+                    const y = event.clientY - rect.top;
+                    
+                    const scaleX = annotationCanvas.width / rect.width;
+                    const scaleY = annotationCanvas.height / rect.height;
+                    
+                    draggedMarker.x = x * scaleX;
+                    draggedMarker.y = y * scaleY;
+                    
+                    redrawAnnotations();
+                }
+            });
+
+            document.getElementById('annotation-layer')?.addEventListener('mouseup', function() {
+                isDraggingMarker = false;
+                draggedMarker = null;
+            });
+
+            document.getElementById('annotation-layer')?.addEventListener('mouseleave', function() {
+                isDraggingMarker = false;
+                draggedMarker = null;
+            });
+
+            // Клик по фону для снятия выделения
+            document.getElementById('annotation-layer')?.addEventListener('click', function(event) {
+                const rect = annotationCanvas.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
                 
-                redrawAnnotations();
-            }
-        });
+                const annotation = getAnnotationAt(x, y);
+                
+                // Если кликнули на пустое место и не перетаскиваем, снимаем выделение
+                if (!annotation && !isDraggingMarker) {
+                    selectMarker(null);
+                }
+            });
 
-        document.getElementById('annotation-layer').addEventListener('mouseup', function() {
-            isDraggingMarker = false;
-            draggedMarker = null;
-        });
+            // Сохранение оригинального изображения скриншота
+            document.getElementById('screenshot-image')?.addEventListener('load', function() {
+                screenshotImg = this;
+            });
 
-        document.getElementById('annotation-layer').addEventListener('mouseleave', function() {
-            isDraggingMarker = false;
-            draggedMarker = null;
-        });
+            // Остальные элементы управления
+            document.getElementById('reset-view')?.addEventListener('click', function() {
+                controls.reset();
+                updateStatus("View reset", false);
+            });
 
-        // Клик по фону для снятия выделения
-        document.getElementById('annotation-layer').addEventListener('click', function(event) {
-            const rect = annotationCanvas.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            
-            const annotation = getAnnotationAt(x, y);
-            
-            // Если кликнули на пустое место и не перетаскиваем, снимаем выделение
-            if (!annotation && !isDraggingMarker) {
-                selectMarker(null);
-            }
-        });
+            document.getElementById('toggle-grid')?.addEventListener('click', function() {
+                gridVisible = !gridVisible;
+                gridHelper.visible = gridVisible;
+                this.textContent = "Grid: " + (gridVisible ? "On" : "Off");
+            });
 
-        // Сохранение оригинального изображения скриншота
-        document.getElementById('screenshot-image').addEventListener('load', function() {
-            screenshotImg = this;
-        });
+            document.getElementById('toggle-axes')?.addEventListener('click', function() {
+                axesVisible = !axesVisible;
+                axesHelper.visible = axesVisible;
+                this.textContent = "Axes: " + (axesVisible ? "On" : "Off");
+            });
 
-        // Все остальные обработчики событий остаются без изменений
-        document.getElementById('reset-view').addEventListener('click', function() {
-            controls.reset();
-            updateStatus("View reset", false);
-        });
-        
-        document.getElementById('toggle-grid').addEventListener('click', function() {
-            gridVisible = !gridVisible;
-            gridHelper.visible = gridVisible;
-            this.textContent = "Grid: " + (gridVisible ? "On" : "Off");
-            updateStatus("Grid " + (gridVisible ? "enabled" : "disabled"), false);
-        });
-        
-        document.getElementById('toggle-axes').addEventListener('click', function() {
-            axesVisible = !axesVisible;
-            axesHelper.visible = axesVisible;
-            this.textContent = "Axes: " + (axesVisible ? "On" : "Off");
-            updateStatus("Axes " + (axesVisible ? "enabled" : "disabled"), false);
-        });
-        
-        document.getElementById('bg-dark').addEventListener('click', function() {
-            scene.background = new THREE.Color(0x2c3e50);
-            updateStatus("Dark background enabled", false);
-        });
-        
-        document.getElementById('bg-light').addEventListener('click', function() {
-            scene.background = new THREE.Color(0xcccccc);
-            updateStatus("Light background enabled", false);
-        });
-        
-        document.getElementById('bg-gradient').addEventListener('click', function() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 256;
-            const context = canvas.getContext('2d');
-            
-            const gradient = context.createLinearGradient(0, 0, 256, 256);
-            gradient.addColorStop(0, '#1a2a6c');
-            gradient.addColorStop(0.5, '#b21f1f');
-            gradient.addColorStop(1, '#fdbb2d');
-            
-            context.fillStyle = gradient;
-            context.fillRect(0, 0, 256, 256);
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            scene.background = texture;
-            updateStatus("Gradient background enabled", false);
-        });
-        
-        document.getElementById('model-color').addEventListener('input', function() {
-            updateModelColor();
-        });
-        
-        document.getElementById('toggle-wireframe').addEventListener('click', function() {
-            toggleWireframe();
-            updateStatus("Wireframe " + (wireframeVisible ? "enabled" : "disabled"), false);
-        });
-        
-        document.getElementById('toggle-rotation').addEventListener('click', function() {
-            toggleRotation();
-            updateStatus("Auto rotation " + (autoRotation ? "enabled" : "disabled"), false);
-        });
-        
-        document.getElementById('rotation-direction').addEventListener('click', function() {
-            toggleRotationDirection();
-            updateStatus("Rotation direction: " + (rotationDirection > 0 ? "clockwise" : "counter-clockwise"), false);
-        });
-        
-        document.getElementById('rotation-speed').addEventListener('input', function() {
-            updateRotationSpeed();
-        });
-        
-        // Animation loop
+            document.getElementById('bg-dark')?.addEventListener('click', function() {
+                scene.background = new THREE.Color(0x2c3e50);
+            });
+
+            document.getElementById('bg-light')?.addEventListener('click', function() {
+                scene.background = new THREE.Color(0xcccccc);
+            });
+
+            document.getElementById('bg-gradient')?.addEventListener('click', function() {
+                // Создание градиентного фона
+                const canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 256;
+                const context = canvas.getContext('2d');
+                
+                const gradient = context.createLinearGradient(0, 0, 256, 256);
+                gradient.addColorStop(0, '#1a2a6c');
+                gradient.addColorStop(0.5, '#b21f1f');
+                gradient.addColorStop(1, '#fdbb2d');
+                
+                context.fillStyle = gradient;
+                context.fillRect(0, 0, 256, 256);
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                scene.background = texture;
+            });
+
+            // Цвет модели
+            document.getElementById('model-color')?.addEventListener('input', updateModelColor);
+
+            // Каркасный режим
+            document.getElementById('toggle-wireframe')?.addEventListener('click', toggleWireframe);
+
+            // Автовращение
+            document.getElementById('toggle-rotation')?.addEventListener('click', toggleRotation);
+
+            // Направление вращения
+            document.getElementById('rotation-direction')?.addEventListener('click', toggleRotationDirection);
+
+            // Скорость вращения
+            document.getElementById('rotation-speed')?.addEventListener('input', updateRotationSpeed);
+
+            // Изменение размера окна
+            window.addEventListener('resize', function() {
+                updateRendererSize();
+            });
+
+            // Reload default model
+            document.getElementById('reload-model')?.addEventListener('click', function() {
+                loadDefaultModel();
+            });
+        }
+
+        // Анимация
         function animate() {
             requestAnimationFrame(animate);
             
+            // Вращение модели если включено автовращение
             if (autoRotation && currentModel) {
                 currentModel.rotation.y += rotationSpeed * 0.01 * rotationDirection;
             }
@@ -1455,10 +1872,19 @@
             controls.update();
             renderer.render(scene, camera);
         }
-        
-        // Initialize and start - загружаем модель сразу при запуске
-        loadDefaultModel();
-        animate();
+
+        // Инициализация приложения
+        function init() {
+            initThreeJS();
+            setupEventListeners();
+            loadDefaultModel(); // Загружаем модель по умолчанию при запуске
+            animate();
+        }
+
+        // Запуск приложения когда DOM загружен
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+        });
     </script>
 </body>
 </html>
