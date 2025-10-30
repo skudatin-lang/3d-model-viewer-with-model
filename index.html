@@ -230,36 +230,17 @@
             text-align: center;
         }
         
-        /* Model Selection Styles */
-        .model-selection {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        /* Model Selection Styles - УПРОЩЕНО */
+        .model-info {
+            background: rgba(67, 97, 238, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
             margin: 10px 5px;
         }
-        .model-btn {
-            background: #4361ee;
-            color: white;
-            border: none;
-            padding: 12px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .model-btn:hover {
-            background: #3a56d4;
-            transform: translateY(-2px);
-        }
-        .model-btn.active {
-            background: #7209b7;
-            border: 2px solid #4cc9f0;
-        }
         .model-icon {
-            font-size: 18px;
+            font-size: 48px;
+            margin-bottom: 10px;
         }
         
         .screenshot-preview {
@@ -504,8 +485,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>3D Model Viewer PRO - GitHub Version</h1>
-            <p class="subtitle">Professional 3D model viewer with pre-loaded models</p>
+            <h1>3D Model Viewer PRO</h1>
+            <p class="subtitle">Загружает модель default.stl из репозитория GitHub</p>
         </header>
 
         <div class="viewer-container">
@@ -519,22 +500,14 @@
 
             <div id="controls">
                 <div class="control-group">
-                    <h3>Select Model</h3>
-                    <div class="model-selection">
-                        <button class="model-btn" data-model="robot" id="btn-robot">
-                            <span class="model-icon">🤖</span>
-                            Robot Arm (STL)
-                        </button>
-                        <button class="model-btn" data-model="teapot" id="btn-teapot">
-                            <span class="model-icon">🍵</span>
-                            Utah Teapot (GLB)
-                        </button>
-                        <button class="model-btn" data-model="cube" id="btn-cube">
-                            <span class="model-icon">⬜</span>
-                            Textured Cube (OBJ)
-                        </button>
+                    <h3>Model Info</h3>
+                    <div class="model-info">
+                        <div class="model-icon">🔷</div>
+                        <h4>Default Model</h4>
+                        <p>Загружается из репозитория GitHub</p>
+                        <button id="reload-model" class="screenshot-btn">Reload Model</button>
                     </div>
-                    <p class="format-info">All models are loaded from GitHub repository</p>
+                    <p class="format-info">Файл: default.stl из папки models</p>
                 </div>
 
                 <div class="control-group">
@@ -610,7 +583,7 @@
                     <button id="take-screenshot" class="screenshot-btn">Take Screenshot</button>
                 </div>
 
-                <div class="status" id="status">Loading default model...</div>
+                <div class="status" id="status">Loading default model from GitHub...</div>
             </div>
         </div>
 
@@ -693,7 +666,7 @@
         </div>
 
         <footer>
-            <p>3D Model Viewer PRO - GitHub Version | All models loaded from repository</p>
+            <p>3D Model Viewer PRO | Model: default.stl from GitHub repository</p>
         </footer>
     </div>
 
@@ -705,24 +678,17 @@
 
     <script>
         // =============================================
-        // КОНФИГУРАЦИЯ МОДЕЛЕЙ - УЖЕ НАСТРОЕНО ДЛЯ ВАС!
+        // КОНФИГУРАЦИЯ - ТОЛЬКО ОДНА МОДЕЛЬ
         // =============================================
         
         const GITHUB_USERNAME = 'skudatin-lang';
         const GITHUB_REPOSITORY = '3d-model-viewer-with-model';
         const GITHUB_BRANCH = 'main';
         
-        // Ссылки на модели в вашем репозитории
-        const MODEL_URLS = {
-            'robot': `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/${GITHUB_BRANCH}/models/robot.stl`,
-            'teapot': `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/${GITHUB_BRANCH}/models/teapot.glb`, 
-            'cube': `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/${GITHUB_BRANCH}/models/cube.obj`
-        };
-        
-        // Текущая выбранная модель
-        let currentSelectedModel = 'robot';
+        // Ссылка на единственную модель
+        const DEFAULT_MODEL_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/${GITHUB_BRANCH}/models/default.stl`;
 
-        // Остальной код остается без изменений
+        // Основные переменные
         let currentModel = null;
         let gridVisible = true;
         let axesVisible = true;
@@ -983,78 +949,57 @@
             updateStatus(`Material changed to: ${type}`, false);
         }
         
-        // Load model from URL
-        function loadModelFromURL(url, modelName) {
-            return new Promise((resolve, reject) => {
-                updateStatus(`Loading model: ${modelName}`, false);
-                showLoading(true);
-                
-                // Remove previous model
-                if (currentModel) {
-                    scene.remove(currentModel);
-                }
-                
-                const fileExtension = url.toLowerCase().split('.').pop();
-                let loadPromise;
-                
-                // Determine which loader to use based on file extension
-                if (fileExtension === 'stl') {
-                    loadPromise = loadSTLFromURL(url);
-                } else if (fileExtension === 'glb' || fileExtension === 'gltf') {
-                    loadPromise = loadGLBFromURL(url);
-                } else if (fileExtension === 'obj') {
-                    loadPromise = loadOBJFromURL(url);
-                } else {
-                    updateStatus("Unsupported file format", true);
+        // Load default model from GitHub
+        function loadDefaultModel() {
+            updateStatus("Loading default model from GitHub...", false);
+            showLoading(true);
+            
+            // Remove previous model
+            if (currentModel) {
+                scene.remove(currentModel);
+            }
+            
+            loadSTLFromURL(DEFAULT_MODEL_URL)
+                .then(model => {
+                    // Create a container group for the model
+                    const container = new THREE.Group();
+                    container.add(model);
+                    
+                    // Calculate the bounding box of the model
+                    const box = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    
+                    // Center the model within the container
+                    model.position.x = -center.x;
+                    model.position.y = -center.y;
+                    model.position.z = -center.z;
+                    
+                    // Add the container to the scene
+                    currentModel = container;
+                    scene.add(currentModel);
+                    
+                    // Store materials for color control
+                    storeOriginalMaterials(currentModel);
+                    
+                    // Adjust camera to fit model
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const fov = camera.fov * (Math.PI / 180);
+                    let cameraZ = Math.abs(maxDim / (2 * Math.tan(fov / 2)));
+                    
+                    // Set camera position
+                    camera.position.set(0, 0, cameraZ * 1.5);
+                    controls.target.set(0, 0, 0);
+                    controls.update();
+                    
                     showLoading(false);
-                    reject(new Error("Unsupported file format"));
-                    return;
-                }
-                
-                loadPromise
-                    .then(model => {
-                        // Create a container group for the model
-                        const container = new THREE.Group();
-                        container.add(model);
-                        
-                        // Calculate the bounding box of the model
-                        const box = new THREE.Box3().setFromObject(model);
-                        const center = box.getCenter(new THREE.Vector3());
-                        const size = box.getSize(new THREE.Vector3());
-                        
-                        // Center the model within the container
-                        model.position.x = -center.x;
-                        model.position.y = -center.y;
-                        model.position.z = -center.z;
-                        
-                        // Add the container to the scene
-                        currentModel = container;
-                        scene.add(currentModel);
-                        
-                        // Store materials for color control
-                        storeOriginalMaterials(currentModel);
-                        
-                        // Adjust camera to fit model
-                        const maxDim = Math.max(size.x, size.y, size.z);
-                        const fov = camera.fov * (Math.PI / 180);
-                        let cameraZ = Math.abs(maxDim / (2 * Math.tan(fov / 2)));
-                        
-                        // Set camera position
-                        camera.position.set(0, 0, cameraZ * 1.5);
-                        controls.target.set(0, 0, 0);
-                        controls.update();
-                        
-                        showLoading(false);
-                        updateStatus(`3D model loaded successfully: ${modelName}`, false);
-                        resolve(model);
-                    })
-                    .catch(error => {
-                        console.error("Model load error:", error);
-                        showLoading(false);
-                        updateStatus(`Error loading ${modelName}: ${error.message}`, true);
-                        reject(error);
-                    });
-            });
+                    updateStatus("Default model loaded successfully from GitHub", false);
+                })
+                .catch(error => {
+                    console.error("Model load error:", error);
+                    showLoading(false);
+                    updateStatus(`Error loading default model: ${error.message}`, true);
+                });
         }
         
         // Load STL from URL
@@ -1087,98 +1032,6 @@
                         reject(new Error("Failed to fetch STL file: " + error.message));
                     });
             });
-        }
-        
-        // Load GLB/GLTF from URL
-        function loadGLBFromURL(url) {
-            return new Promise((resolve, reject) => {
-                const loader = new THREE.GLTFLoader();
-                
-                loader.load(
-                    url,
-                    function(gltf) {
-                        const model = gltf.scene;
-                        
-                        // Apply our material to the model
-                        model.traverse((child) => {
-                            if (child.isMesh) {
-                                const newMaterial = createMaterial(currentMaterialType, child.material?.color, wireframeVisible);
-                                child.material = newMaterial;
-                            }
-                        });
-                        
-                        resolve(model);
-                    },
-                    function(xhr) {
-                        const percent = Math.round((xhr.loaded / xhr.total) * 100);
-                        document.getElementById('progress').textContent = percent + '%';
-                    },
-                    function(error) {
-                        console.error("GLTF load error:", error);
-                        reject(new Error("Failed to load GLB/GLTF file from URL"));
-                    }
-                );
-            });
-        }
-        
-        // Load OBJ from URL
-        function loadOBJFromURL(url) {
-            return new Promise((resolve, reject) => {
-                const loader = new THREE.OBJLoader();
-                
-                fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.text();
-                    })
-                    .then(data => {
-                        try {
-                            const model = loader.parse(data);
-                            
-                            // Apply material to all meshes in the model
-                            model.traverse((child) => {
-                                if (child.isMesh) {
-                                    const material = createMaterial(currentMaterialType, document.getElementById('model-color').value, wireframeVisible);
-                                    child.material = material;
-                                }
-                            });
-                            
-                            resolve(model);
-                        } catch (error) {
-                            console.error("OBJ load error:", error);
-                            reject(new Error("Failed to load OBJ file from URL: " + error.message));
-                        }
-                    })
-                    .catch(error => {
-                        reject(new Error("Failed to fetch OBJ file: " + error.message));
-                    });
-            });
-        }
-        
-        // Load selected model
-        function loadSelectedModel(modelKey) {
-            if (MODEL_URLS[modelKey]) {
-                currentSelectedModel = modelKey;
-                loadModelFromURL(MODEL_URLS[modelKey], modelKey);
-                
-                // Update active button
-                document.querySelectorAll('.model-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                document.getElementById(`btn-${modelKey}`).classList.add('active');
-            }
-        }
-        
-        // Initialize model selection buttons
-        function initModelSelection() {
-            document.getElementById('btn-robot').addEventListener('click', () => loadSelectedModel('robot'));
-            document.getElementById('btn-teapot').addEventListener('click', () => loadSelectedModel('teapot'));
-            document.getElementById('btn-cube').addEventListener('click', () => loadSelectedModel('cube'));
-            
-            // Load default model
-            loadSelectedModel('robot');
         }
 
         // Остальные функции (аннотации, скриншоты и т.д.)
@@ -1512,7 +1365,7 @@
             document.getElementById('screenshot-preview').style.display = 'none';
         }
 
-        // File upload functionality
+        // File upload functionality (для загрузки пользовательских моделей)
         function loadSTLModel(file) {
             return new Promise((resolve, reject) => {
                 const loader = new THREE.STLLoader();
@@ -1676,6 +1529,11 @@
             }
         });
         
+        // Reload default model button
+        document.getElementById('reload-model').addEventListener('click', function() {
+            loadDefaultModel();
+        });
+
         // Material type buttons
         document.querySelectorAll('.material-btn').forEach(button => {
             button.addEventListener('click', function() {
@@ -1862,8 +1720,8 @@
             renderer.render(scene, camera);
         }
         
-        // Initialize and start
-        initModelSelection();
+        // Initialize and start - загружаем модель сразу при запуске
+        loadDefaultModel();
         animate();
     </script>
 </body>
